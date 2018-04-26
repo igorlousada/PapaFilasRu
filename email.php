@@ -8,6 +8,12 @@
   use PHPMailer\PHPMailer\SMTP;
   use PHPMailer\PHPMailer\Exception;
 
+  $email = $_POST['Email'];
+  //$assunto = $_POST['Assunto'];
+  $Nome = $_POST['Nome'];
+  $saldo = $_POST['Saldo'];
+  $creditos = $_POST['Creditos'];
+
   $Mailer = new PHPMailer;
 
   $Mailer->IsSMTP();
@@ -31,19 +37,20 @@
  $Mailer->From = 'ayrtonlaceda01@gmail.com';
 
  // Nome do remetente
- $Mailer->FromName = 'Ayrton';
+ $Mailer->FromName = 'PAPAFILAS';
 
  // assunto da mensagem
- $Mailer->Subject = 'APIemail';
+ $Mailer->Subject = 'Atualização de Creditos';
 
  // corpo da mensagem
- $Mailer->Body = 'Essa mensagem foi enviada com a API de email';
+ $mensagem = $Nome.", você comprou ".$creditos." creditos, e seu saldo é de $".$saldo."\n\n P@P@filas";
+ $Mailer->Body = $mensagem;
 
  // corpo da mensagem em modo texto
- $Mailer->AltBody = 'Mensagemem texto';
+ //$Mailer->AltBody = $mensagem;
 
  // adiciona destinatário (pode ser chamado inúmeras vezes)
- $Mailer->AddAddress('moises.dandico23@gmail.com');
+ $Mailer->AddAddress($email);
 
  // verifica se enviou corretamente
  if ($Mailer->Send())
