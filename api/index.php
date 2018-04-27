@@ -7,7 +7,7 @@ $app = new \Slim\App;
 
 #metodo de teste 1
 $app->get('/', function (Request $request, Response $response) use ($app) {
-    $response->getBody()->write("Moises cuzão!");
+    $response->getBody()->write("Bebê de Microservice!");
     return $response;	
 });
 
@@ -193,6 +193,47 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 		
 	}
 	
+});
+
+#método para solicitar token pagseguro
+$app->post('/creditos/', function (Request $request, Response $response, array $args) {
+    $addCreditos = json_decode($request->getBody());
+	
+	$curl = curl_init();
+
+	curl_setopt_array($curl, array(
+		CURLOPT_URL => "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout/",
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_ENCODING => "",
+		CURLOPT_MAXREDIRS => 10,
+		CURLOPT_TIMEOUT => 30,
+		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		CURLOPT_CUSTOMREQUEST => "POST",
+		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&referenceREF=REF1234&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
+		CURLOPT_HTTPHEADER => array(
+			"content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"
+		),
+	));
+
+	$resposta = curl_exec($curl);
+	$err = curl_error($curl);
+	$tokenxml = simplexml_load_string($resposta);
+	$addCreditos->URL_TOKEN	= 'https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code='.$tokenxml->code;
+
+	curl_close($curl);
+
+	if ($err) {
+		echo "cURL Error #:" . $err;
+	} else {
+		$return = $response->withJson($addCreditos)
+		->withHeader('Content-type', 'application/json');
+		return $return;
+	}
+});
+
+#método verifica historico pagseguro
+$app->post('/creditos/insereHistorico/', function (Request $request, Response $response, array $args) {
+	 $dadosTransacao = json_decode($request->getBody());
 });
 
 
