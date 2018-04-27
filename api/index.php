@@ -7,7 +7,7 @@ $app = new \Slim\App;
 
 #metodo de teste 1
 $app->get('/', function (Request $request, Response $response) use ($app) {
-    $response->getBody()->write("Bebê de Microservice!");
+    $response->getBody()->write("Moises cuzão!");
     return $response;	
 });
 
