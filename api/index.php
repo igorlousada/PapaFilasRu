@@ -240,3 +240,33 @@ $app->post('/creditos/insereHistorico/', function (Request $request, Response $r
 
 
 $app->run();
+
+
+
+
+### Metodo que recebe um codigo de notificação de mudanca de status do pagseguro, envia de volta
+###	esse codigo para a api do pagseguro e recebe as informações da mudanca de status.
+#passo 1 receber em uma url (tipo papafilasru/api/notificacoes) o codigo enviado pela api do pagseguro
+#passo 2 salvar o valor da variável notificationCode, que é o codigo da notificacao
+#passo 3 fazer uma requisicao (por meio de http.get??) à api do pagseguro com o notificationCode e receber a resposta em xml
+#passo 4 com a resposta, chamar um metodo que insere historico e, por sua vez, atualiza o saldo
+$app->get('/notificacoes', function (Request $request, Response $response,array $args) {
+//
+
+if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transaction'){
+    //se notificationType for true e = 'transactio',  continuamos
+ 
+    $email = 'moises.dandico23@gmail.com';
+    $token = '93D0433C38974DD2B3001F53B30CEA45';
+ 
+    $url = 'https://ws.sandbox.pagseguro.uol.com.br/v2/transactions/notifications/' . $_POST['notificationCode'] . '?email=' . $email . '&token=' . $token;
+ 
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $transaction= curl_exec($curl);
+    curl_close($curl);
+ 
+    $transaction = simplexml_load_string($transaction);
+}
+});
