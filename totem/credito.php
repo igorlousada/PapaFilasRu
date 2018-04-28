@@ -1,3 +1,12 @@
+<?php
+
+session_start();
+
+$saldo_atual = $_SESSION['saldo'];
+$limite=100-$saldo_atual;
+?>
+
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -7,7 +16,7 @@
   <title>comprar</title>
 
 <!-- Importando google icons-->
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+
    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <!-- importando arquivos CSS-->
@@ -23,7 +32,7 @@
 <div class="container">
 
   <div class="fixed-action-btn">
-    <a  href="pagina-inicial.html"  class="btn-floating btn-large blue">
+    <a  href="comprar.html"  class="btn-floating btn-large blue">
       <iclass="large material-icons" class="material-icons"><i class="material-icons">keyboard_backspace</i>
     </a>
     <ul>
@@ -42,7 +51,8 @@
   <div class="container">
   <br/>
   <br/>
-<h1 class="header blue-text">Comprar créditos</h1>
+<h4 class="header red-text">Você possui <?php echo "$saldo_atual créditos e pode comprar mais R$ $limite em créditos"?></h4>
+<h1 class="header blue-text">Quantidade de créditos</h1>
   </div>
 
 
@@ -54,10 +64,10 @@
     <br />
     <br />
 <!-- joijojij -->
-<!-- Titulo + imput text matricula-->
-    <h5 class="header blue-text">Insira sua matrícula</h1>
+<!-- Titulo + imput text créditos-->
+    <h5 class="header blue-text">Insira a quantidade de créditos que deseja comprar</h1>
       <p class="blue-text">
-        Para ter acesso à página de compras, digite sua matrícula abaixo:
+        Para concluir sua compra, digite a quantidade de créditos desejada:
       </p>
     <br />
     <br />
@@ -67,8 +77,9 @@
   <div class="card-panel">
     <div class="row">
       <section class="input-filts col s12">
-	    <form action="/PapaFilasRU/totem/pagamento.php" method="POST">
-         <input type="Number" name="matricula" placeholder="Matrícula" class="center" style="font-size: 2rem;">
+	  
+	<form action="credito.php" method="POST">
+         <input type="Number" name="creditos" placeholder="Quantidade" class="center" style="font-size: 2rem;">
          <label for="NumberLote"></label>
       </section>
  
@@ -92,14 +103,23 @@
   
 
   </div>
-    <button type="submit" formmethod="POST" class="btn waves-effect waves-light blue" style="width: 150px; height: 100px">Enviar</button>
-	    <i class="material-icons right">send</i> </button></a>
+      <a href="verifica_dados.php">  <button class="btn waves-effect waves-light blue" type="submit" name="action" style="width: 150px; height: 100px">Enviar
+    <i class="material-icons right">send</i>
+  </button></a>
   </form>
         
 </div>
-
-
-
+<?php
+ if (isset($_POST['creditos']) and count($_POST)>0){
+	 if ($_POST['creditos']<=$limite){
+		 $_SESSION['creditos']=$_POST['creditos'];
+		 echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/verifica_dados.php\">";
+	 }
+	else{
+		echo "<h4 class=\"header red-text\"> Erro! Você tentou adquirir uma quantidade de créditos superior ao seu limite de aquisição. Você só pode adquirir mais R$ $limite em créditos </h4>";
+	}
+}
+?>
 
 <script src="js/index.js"></script>
 <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>

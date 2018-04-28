@@ -67,8 +67,9 @@
 <div class="col s12 10">
   <div class="card-panel">
     <div class="row">
+	  <form action="/PapaFilasRU/totem/verifica_saldo.php" method="POST">
       <section class="input-filts col s12">
-         <input type="Number" name="NumberLote" value="" placeholder="Matrícula" class="center" style="font-size: 2rem;">
+         <input type="Number" name="matricula" placeholder="Matrícula" class="center" style="font-size: 2rem;">
          <label for="NumberLote"></label>
       </section>
  
@@ -95,7 +96,7 @@
       <a href="créditos.html">  <button class="btn waves-effect waves-light blue" type="submit" name="action" style="width: 150px; height: 100px">Enviar
     <i class="material-icons right">send</i>
   </button></a>
-        
+  </form>      
 </div>
 
 
@@ -109,8 +110,6 @@
     $(document).ready(function() {
        $('input#input_text, textarea#textarea2').characterCounter();
      });
-
-
     </script>
     </script>
 </body>
