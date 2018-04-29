@@ -239,11 +239,6 @@ $app->post('/creditos/insereHistorico/', function (Request $request, Response $r
 
 
 
-$app->run();
-
-
-
-
 ### Metodo que recebe um codigo de notificação de mudanca de status do pagseguro, envia de volta
 ###	esse codigo para a api do pagseguro e recebe as informações da mudanca de status.
 #passo 1 receber em uma url (tipo papafilasru/api/notificacoes) o codigo enviado pela api do pagseguro
@@ -268,5 +263,63 @@ if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transacti
     curl_close($curl);
  
     $transaction = simplexml_load_string($transaction);
+
+    echo $transaction;
 }
+	echo "não funcionou o recebimento do id de transaction";
 });
+
+
+
+#metodo de teste: post na url /notificacoes pra testar o metodo acima.
+/* exemplo de notificação enviada pelo PagSeguro (as linhas foram quebradas para facilitar a leitura)
+
+	#############################################################
+	# POST http://lojamodelo.com.br/notificacao HTTP/1.1		#
+	# Host:pagseguro.uol.com.br 								#
+	# Content-Length:85											#
+	# Content-Type:application/x-www-form-urlencoded			#
+	# notificationCode=766B9C-AD4B044B04DA-77742F5FA653-E1AB24	#
+	# notificationType=transaction*/							#
+	#############################################################
+
+$app->post('/notificacoes/teste', function (Request $request, Response $response, array $args) {
+    $notificationCode = json_decode($request->getBody());
+	
+	$curl = curl_init();
+
+	curl_setopt_array($curl, array(
+		CURLOPT_URL => "http://localhost/dashboard/papafilasRU/codigo/PapaFilasRu/api/notificacoes",
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_ENCODING => "",
+		CURLOPT_MAXREDIRS => 10,
+		CURLOPT_TIMEOUT => 30,
+		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		CURLOPT_CUSTOMREQUEST => "POST",
+		CURLOPT_POSTFIELDS => "notificationCode=766B9C-AD4B044B04DA-77742F5FA653-E1AB24",
+		CURLOPT_HTTPHEADER => array("Content-Type:application/x-www-form-urlencoded"),
+	));
+
+	$resposta = curl_exec($curl);
+	$erro = curl_error($curl);
+	$tokenxml = simplexml_load_string($resposta);
+	$addCreditos->URL_TOKEN	= 'https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code='.$tokenxml->code;
+
+	curl_close($curl);
+
+	if ($erro) {
+		echo "cURL Error #:" . $erro;
+	} else {
+		$return = $response->withJson($addCreditos)
+		->withHeader('Content-type', 'application/json');
+		return $return;
+	}
+});
+
+
+
+
+
+
+// ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
+$app->run(); 
