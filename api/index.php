@@ -231,13 +231,8 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 	}
 });
 
-#método verifica historico pagseguro
-$app->post('/creditos/insereHistorico/', function (Request $request, Response $response, array $args) {
-	 $dadosTransacao = json_decode($request->getBody());
-});
 
-
-
+/*
 # (nao esta funcionando) 
 ### Metodo que recebe um codigo de notificação de mudanca de status do pagseguro, envia de volta
 ###	esse codigo para a api do pagseguro e recebe as informações da mudanca de status.
@@ -270,7 +265,7 @@ if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transacti
 });
 
 
-/*
+
 # (nao esta funcionando) metodo de teste: post na url /notificacoes pra testar o metodo acima.
 # exemplo de notificação enviada pelo PagSeguro (as linhas foram quebradas para facilitar a leitura)
 
@@ -318,14 +313,18 @@ $app->post('/notificacoes/teste', function (Request $request, Response $response
 */
 
 //metodo /credito/insereHistorico
-$app->get('/credito/insereHistorico', function (Request $request, Response $response,array $args) {
+$app->post('/credito/insereHistorico', function (Request $request, Response $response,array $args) {
 
-	//$_POST['notificationType';
-	//$_POST['notificationCode';
+	
+	//recebendo o json do post e salvando em array com posicao = parametro do json
+	$json =  json_decode($request->getBody(),true);	
+	$matricula = $json['matricula'];
+	$saldo = $json['saldo'];
+	//$campo3 = $json['campo3'];
+	//$campo4 = $json['campo4'];
 
 	//pegando hora atual
-	$horaatual = date("Y-m-d H:i"); // tem que ver qual o formato certo ainda.
-	echo $horaatual;
+	$hora_atual = date("Y-m-d H:i"); // tem que ver qual o formato certo ainda.
 
 	//abrindo conexao com banco de dados
 	try{
@@ -335,37 +334,35 @@ $app->get('/credito/insereHistorico', function (Request $request, Response $resp
 		echo $error->getMessage();
 	}
  
-	//$sql="SELECT usu.*, round(cart.saldo,2) as saldo FROM usuario as usu inner join carteira_usuario as cart ON usu.id_usuario= cart.id_usuario where matricula_usuario= :matricula";
+	//faz a busca pelo id_usuario no bd
+	$sql = "SELECT id_usuario FROM `usuario` WHERE matricula_usuario= $matricula";
 	
-	//prepara o comando sql(?)
+	//prepara o comando sql acima
 	$stmt=$pdo->prepare($sql);
 
-	//
+	//passa o parametro da matricula pra busca do pdo
 	$stmt->bindParam(":matricula", $matricula);
 	$stmt->execute();
+	$stmt = $stmt->fetchAll(\PDO::FETCH_ASSOC); //transformando o objeto em array
+	$stmt = $stmt[0]; // unidimensionalizando o array a partir da posicao 0
+	$id_usuario = $stmt['id_usuario']; // salvando finalmente em id_usuario
+	$stmt->closeCursor(); // fecha ???
 
-		#cria a variavel sql com o comando sql.
-	$sql = "INSERT INTO usuario (matricula_usuario,nome_usuario,cpf,email_usuario,id_grupo,id_status) 
-	values (:MATRICULA,:NOME_USUARIO,:CPF,:EMAIL,:ID_GRUPO,:ID_STATUS) ";
-	
-		#prepara o comando sql
-	$stmt = $pdo->prepare($sql);
-	
-		#atribui os valores de forma segura
-	$stmt->bindParam(":MATRICULA", $criaUsuario->MATRICULA);
-	$stmt->bindParam(":NOME_USUARIO", $criaUsuario->NOME_USUARIO);
-	$stmt->bindParam(":CPF", $criaUsuario->CPF);
-	$stmt->bindParam(":EMAIL", $criaUsuario->EMAIL);
-	$stmt->bindParam(":ID_GRUPO", $criaUsuario->ID_GRUPO);
-	$stmt->bindParam(":ID_STATUS", $criaUsuario->ID_STATUS);
-	
-	#executa o comando e adiciona o usuario ao banco de dados
-	$stmt->execute();
-	
-	#busca o id do usuario inserido
-	$criaUsuario->id_usuario = $pdo->lastInsertId();
-	#retorna os dados do usuario em formato JSON
-	echo json_encode($criaUsuario);
+	// $saldo $hora_atual $id_usuario
+
+	$sql="INSERT INTO historico_compra (codigo_status, data_compra, id_historico, id_usuario, saldo_inserido, valor_compra) values (:CODIGO_STATUS, :DATA_COMPRA, :ID_HISTORICO, :ID_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
+		
+	#prepara a insercao e executa no banco
+	$stmt=$pdo->prepare($sql);				
+	$stmt->bindParam(":CODIGO_STATUS", 1);
+	$stmt->bindParam(":DATA_COMPRA", $hora_atual);
+	$stmt->bindParam(":ID_HISTORICO");
+	$stmt->bindParam(":ID_USUARIO", $id_usuario);
+	$stmt->bindParam(":SALDO_INSERIDO", 0);
+	$stmt->bindParam(":VALOR_COMPRA", $saldo);					
+	$stmt->execute();	
+
+	//falta fazer alguma coisa aqui ainda, uma vez que ainda nao está funcionando com o banco de dados.
 
 });
 
