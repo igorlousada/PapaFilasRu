@@ -317,12 +317,8 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 
 	
 	//recebendo o json do post e salvando em array com posicao = parametro do json
-	$json =  json_decode($request->getBody(),true);	
-	$matricula = $json['matricula'];
-	$saldo = $json['saldo'];
-	//$campo3 = $json['campo3'];
-	//$campo4 = $json['campo4'];
-
+	$json =  json_decode($request->getBody());	
+	
 	//pegando hora atual
 	$hora_atual = date("Y-m-d H:i"); // tem que ver qual o formato certo ainda.
 
@@ -335,34 +331,46 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 	}
  
 	//faz a busca pelo id_usuario no bd
-	$sql = "SELECT id_usuario FROM `usuario` WHERE matricula_usuario= $matricula";
+	$sql = "SELECT id_usuario FROM `usuario` WHERE matricula_usuario= :MATRICULA";
 	
 	//prepara o comando sql acima
 	$stmt=$pdo->prepare($sql);
-
 	//passa o parametro da matricula pra busca do pdo
-	$stmt->bindParam(":matricula", $matricula);
+	$stmt->bindParam(":MATRICULA", $json->MATRICULA);
 	$stmt->execute();
-	$stmt = $stmt->fetchAll(\PDO::FETCH_ASSOC); //transformando o objeto em array
-	$stmt = $stmt[0]; // unidimensionalizando o array a partir da posicao 0
-	$id_usuario = $stmt['id_usuario']; // salvando finalmente em id_usuario
-	$stmt->closeCursor(); // fecha ???
+	$usuario = $stmt->fetch(PDO::FETCH_OBJ);
+	
+	
+	
+	
 
-	// $saldo $hora_atual $id_usuario
+	// $codigo_status $hora_atual $id_usuario $saldo_inserico $valor_compra 
 
-	$sql="INSERT INTO historico_compra (codigo_status, data_compra, id_historico, id_usuario, saldo_inserido, valor_compra) values (:CODIGO_STATUS, :DATA_COMPRA, :ID_HISTORICO, :ID_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
+	//abrindo conexao com banco de dados
+	try{$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","");
+	}
+	catch(PDOException $error){echo $error->getMessage();
+	}
+
 		
+	$sql2="INSERT 	INTO historico_compra 	(codigo_status, data_compra, id_historico, id_usuario, saldo_inserido, valor_compra) 
+					values 					(:CODIGO_STATUS, :DATA_COMPRA, NULL, :ID_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
+		
+	$codigo_status = 1;
+	$saldo_inserido = 0;
+
+
 	#prepara a insercao e executa no banco
-	$stmt=$pdo->prepare($sql);				
-	$stmt->bindParam(":CODIGO_STATUS", 1);
-	$stmt->bindParam(":DATA_COMPRA", $hora_atual);
-	$stmt->bindParam(":ID_HISTORICO");
-	$stmt->bindParam(":ID_USUARIO", $id_usuario);
-	$stmt->bindParam(":SALDO_INSERIDO", 0);
-	$stmt->bindParam(":VALOR_COMPRA", $saldo);					
+	$stmt=$pdo->prepare($sql2);				
+	$stmt->bindvalue(':CODIGO_STATUS', $codigo_status, PDO::PARAM_INT);
+	$stmt->bindvalue(":DATA_COMPRA", $hora_atual, PDO::PARAM_STR_CHAR);
+	$stmt->bindParam(":ID_USUARIO", $usuario->id_usuario);
+	$stmt->bindvalue(":SALDO_INSERIDO", $saldo_inserido, PDO::PARAM_INT);
+	$stmt->bindParam(":VALOR_COMPRA", $json->SALDO);
 	$stmt->execute();	
 
-	//falta fazer alguma coisa aqui ainda, uma vez que ainda nao está funcionando com o banco de dados.
+	//ok, aqui funcionou.
+	//agora precisa retornar um json com tudo isso aí e o id_historico.
 
 });
 
