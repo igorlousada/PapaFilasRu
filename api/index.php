@@ -11,14 +11,14 @@ $app->get('/', function (Request $request, Response $response) use ($app) {
     return $response;	
 });
 
-
+/*
 #metodo de teste 2
 $app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
     $name = $args['name'];
     $response->getBody()->write("Hello, $name");
     return $response;
 });
-
+*/
 
 
 #metodo para listar todos os usuarios
@@ -338,10 +338,22 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 	//passa o parametro da matricula pra busca do pdo
 	$stmt->bindParam(":MATRICULA", $json->MATRICULA);
 	$stmt->execute();
+	//tratar select vazio 
 	$usuario = $stmt->fetch(PDO::FETCH_OBJ);
 	
-	
-	
+	//se o usuario nao existir no bd, retornara null e entrará no if de erro.
+	$existe = $usuario->id_usuario;
+	if (($existe==NULL)){
+		$return = $response->withStatus(204);
+		return $return;
+	}
+
+/*//////////////////////
+return = $response->withJson($registros)
+				->withHeader('Content-type', 'application/json');
+				#caso não encontre o usuario o retorno será 204
+				
+/////////////*/
 	
 
 	// $codigo_status $hora_atual $id_usuario $saldo_inserico $valor_compra 
@@ -369,12 +381,23 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 	$stmt->bindParam(":VALOR_COMPRA", $json->SALDO);
 	$stmt->execute();	
 
-	//ok, aqui funcionou.
-	//agora precisa retornar um json com tudo isso aí e o id_historico.
+	$usuario->id_historico = $pdo->lastInsertId();
+
+	//id_historico//id_usuario//data_compra//valor_compra//saldo_inserido//codigo_status
+	$resposta = array(	'id_historico' => $usuario->id_historico,
+						'id_usuario' => $usuario->id_usuario,
+						'data_compra' => $hora_atual,
+						'valor_compra' => $json->SALDO,
+						'saldo_inserido' => $saldo_inserido,
+						'codigo_status' => $codigo_status,
+						);
+
+	$ret = $response->withJson($resposta)->withHeader('Content-type', 'application/json');
+	return $ret;
+
 
 });
 
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run(); 
-	
