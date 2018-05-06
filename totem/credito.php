@@ -2,8 +2,14 @@
 
 session_start();
 
-$saldo_atual = $_SESSION['saldo'];
-$limite=100-$saldo_atual;
+$usuario = $_SESSION['usuario'];
+
+$saldo_atual = $usuario['SALDO'];
+$limite=number_format(100-$saldo_atual, 2);
+$mensagem = "Você possui R$ " .$saldo_atual. " créditos e pode comprar mais R$ " .$limite. " em créditos";
+if (isset($_SESSION['Forbidden'])){
+  $mensagem = "Erro! Você tentou adquirir uma quantidade de créditos superior ao seu limite de aquisição. Você só pode adquirir mais R$ " .$limite. " em créditos";
+}
 ?>
 
 
@@ -51,7 +57,7 @@ $limite=100-$saldo_atual;
   <div class="container">
   <br/>
   <br/>
-<h4 class="header red-text">Você possui <?php echo "$saldo_atual créditos e pode comprar mais R$ $limite em créditos"?></h4>
+<h4 class="header red-text"><?php echo $mensagem;?></h4>
 <h1 class="header blue-text">Quantidade de créditos</h1>
   </div>
 
@@ -79,7 +85,7 @@ $limite=100-$saldo_atual;
       <section class="input-filts col s12">
 	  
 	<form action="credito.php" method="POST">
-         <input type="Number" name="creditos" placeholder="Quantidade" class="center" style="font-size: 2rem;">
+         <input type="Number" name="NumberLote" placeholder="Quantidade" class="center" style="font-size: 2rem;">
          <label for="NumberLote"></label>
       </section>
  
@@ -110,13 +116,17 @@ $limite=100-$saldo_atual;
         
 </div>
 <?php
- if (isset($_POST['creditos']) and count($_POST)>0){
-	 if ($_POST['creditos']<=$limite){
-		 $_SESSION['creditos']=$_POST['creditos'];
+ if (isset($_POST['NumberLote']) and count($_POST)>0){
+	 if ($_POST['NumberLote']<=$limite){
+		 $_SESSION['creditos']=$_POST['NumberLote'];
+     if(isset($_SESSION['Forbidden'])){
+      unset($_SESSION['Forbidden']);
+     }
 		 echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/verifica_dados.php\">";
 	 }
 	else{
-		echo "<h4 class=\"header red-text\"> Erro! Você tentou adquirir uma quantidade de créditos superior ao seu limite de aquisição. Você só pode adquirir mais R$ $limite em créditos </h4>";
+    $_SESSION['Forbidden']=true;
+	  echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/credito.php\">";	
 	}
 }
 ?>
