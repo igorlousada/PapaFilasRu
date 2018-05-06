@@ -1,53 +1,26 @@
 <?php 
 
-try{
-	
-$username = "root";
-$password = '';	
-	
-$db = new PDO ("mysql:host=localhost; dbname=papafilas", $username, $password);
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
-   }
-catch(PDOException $e)
-	{
-		die("A Conexão Falhou! Impossível de conectar com o Banco de Dados");
-	};
-	
- if (isset($_POST['matricula'])){
-	 		$matricula=$_POST['matricula'];	
-			$verifica_usuario=getUser($db, $matricula);
-			if (count($verifica_usuario)>0){
-				$saldo = getBalance ($verifica_usuario, $db);
-			}
-			else{
-				die("Erro! Usuário Inexistente!");
-			}
- }
- else{
-	 die("Erro! Conexão Imprópria!");
- }
- 
-function getUser($database, $regnum){
-	$user = $database->prepare("SELECT * FROM `usuario` WHERE `matricula_usuario` = ?");
-						$user->bindValue(1, $regnum);
-						$user->execute();
-	$user = $user->fetchAll(\PDO::FETCH_ASSOC);
-	$user = $user[0];
-	return $user;
+define ('USER_NOT_FOUND_IN_CHECK', 5);
+
+session_start();
+
+if (isset($_POST['NumberLote'])){
+		$matricula=$_POST['NumberLote'];	
+		$usuario=getUser($matricula);
+		if (is_null($usuario)){
+				$_SESSION['ERROR']=USER_NOT_FOUND_IN_CHECK;
+				echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+				exit();	 
+		}
+		$saldo = $usuario['SALDO'];
 }
-			
-			
-			
-function getBalance ($user, $database){
-	     $SQL="SELECT `saldo` FROM `carteira_usuario` WHERE `id_usuario` = ?";
-		 $id_usuario=$user['id_usuario'];
-		 $balance = $database->prepare($SQL);
-				  $balance->bindValue(1, $id_usuario);
-				  $balance->execute();
-		$balance = $balance->fetchAll(\PDO::FETCH_ASSOC);
-		$balance = $balance[0];
-		$balance = $balance['saldo'];			
-		return $balance;
+
+function getUser($regnum){
+	$api_adress = 'http://35.199.101.182/api/usuarios/';
+	$api_adress = $api_adress.$regnum; 
+	$json_user = file_get_contents($api_adress);
+	$user = json_decode($json_user, true);
+	return $user;
 }
 
 ?>
@@ -90,7 +63,7 @@ function getBalance ($user, $database){
 <!-- Mensagem inicial-->
 <div class="section no-pad-bot" id="index-banner">
   <div class="container">
-  <h5 class=" header blue-text"> <?php echo "$matricula"; ?></h5>
+  <h5 class=" header blue-text"> <?php echo "Olá, $matricula"; ?></h5>
 <br />
 <br />
 <br />

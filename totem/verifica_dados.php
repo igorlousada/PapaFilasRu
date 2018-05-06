@@ -1,12 +1,12 @@
 <?php 
+define('API_TO_PAYMENT_CONNECTION_FAILED', 4);
 
 session_start();
 
 $user = $_SESSION['usuario'];
-$creditos = $_SESSION['creditos'];
-$matricula = $user['matricula_usuario'];
-$nome = $user['nome_usuario'];
-
+$creditos = number_format($_SESSION['creditos'], 2);
+$matricula = $user['MATRICULA'];
+$nome = $user['NOME_USUARIO'];
 ?>
 
 
@@ -78,21 +78,9 @@ $nome = $user['nome_usuario'];
 	
 	<?php 
 
-$info_lower = $user;
-$info = [];
+$user['SALDO'] = $creditos;
 
-foreach($info_lower as $key=>$value){
-	if ($key=="email_usuario")
-		$key="email";
-	if ($key=="matricula_usuario")
-		$key="matricula";
-	$chave=strtoupper($key);
-	$info[$chave]=$value;
-}
-
-$info['SALDO'] = $creditos;
-$json_info = json_encode($info);
-
+$json_info = json_encode($user);
 $context = stream_context_create(array(
     'http' => array(
         'method' => 'POST',
@@ -104,7 +92,7 @@ $context = stream_context_create(array(
 $request = file_get_contents("http://35.199.101.182/api/creditos/", false, $context);
 
 if ($request == false){
-	die();
+	$_SESSION['ERROR']=API_TO_PAYMENT_CONNECTION_FAILED;
 }
 
 $resposta = json_decode($request, true);

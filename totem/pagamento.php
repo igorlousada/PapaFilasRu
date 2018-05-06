@@ -1,112 +1,54 @@
 <?php
-
-$username = 'root';
-$password = '';
+define ('USER_NOT_FOUND', 1);
+define ('ENROLLMENT_DROPPED',2);
+define ('TOO_MUCH_CREDIT', 3);
 
 session_start();
 
-try{
-$db = new PDO ("mysql:host=localhost; dbname=papafilas", $username, $password);
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
-   }
-catch(PDOException $e)
-	{
-		die("A Conexão Falhou! Impossível de conectar com o Banco de Dados");
-	};
-
-if (isset($_POST['matricula'])){
-		$matricula=$_POST['matricula'];	
-		$verifica_usuario=getUser($db, $matricula);
-		
-		if (count($verifica_usuario)>0){
-			$usuario=$verifica_usuario[0];
+if (isset($_POST['NumberLote'])){
+		$matricula=$_POST['NumberLote'];	
+		$usuario=getUser($matricula);
+		if (!is_null($usuario)){
 			$_SESSION['usuario']=$usuario;
-			if (check_authorization($usuario, $db)){
+			if (check_authorization($usuario)){
 			echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/credito.php\">";
-			// header("Location: /PapaFilasRU/totem/credito.php", TRUE, 307);
 			  exit();
 			}
 			else{
-				echo "Usuário não autorizado!";
-			}
-		}
-		
-		else{
-			try{
-				$MW = new PDO ("mysql:host=localhost; dbname=matriculaweb", "root", "");
-				$MW->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
-			}
-		catch(PDOException $e)
-			{
-				die("A Conexão Falhou! Impossível de conectar com o Banco de Dados do Matricula Web");
-			};
-			
-		$verifica_mw = getUser($MW, $matricula);
-		
-		if (count($verifica_mw)>0){
-			$usuario=$verifica_mw[0];
-			insertUser($db, $usuario);
-			if (check_authorization($usuario, $db)){
-				$_SESSION['usuario']=$usuario;
-				echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/credito.php\">";
-				// header("Location: /PapaFilasRU/totem/credito.php", TRUE, 307);
-				 exit();
-			}
-		else{
-				die();
+				echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+				exit();
+
 			}
 		}
 		else{
-			echo "Impossível prosseguir com a compra! Usuário não cadastrado!";
-			}
-	}
+				$_SESSION['ERROR']=USER_NOT_FOUND;
+				echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+				exit();	 
+		}
 }
 
 
-function getUser($database, $regnum){
-	$user = $database->prepare("SELECT * FROM `usuario` WHERE `matricula_usuario` = ?");
-						$user->bindValue(1, $regnum);
-						$user->execute();
-	$user = $user->fetchAll(\PDO::FETCH_ASSOC);
+function getUser($regnum){
+	$api_adress = 'http://35.199.101.182/api/usuarios/';
+	$api_adress = $api_adress.$regnum; 
+	$json_user = file_get_contents($api_adress);
+	$user = json_decode($json_user, true);
 	return $user;
 }
 
-function insertUser ($database, $user){
-		$SQL = "INSERT INTO `usuario` (`id_usuario`,`matricula_usuario`, `nome_usuario`, `cpf`, `email_usuario`, `id_grupo`, `id_status`) VALUES (NULL, ?, ?, ?, ?, ?, ?)";
-		$inclui=$database->prepare($SQL);
-	    $inclui->bindValue(1, $user['matricula_usuario'], PDO::PARAM_STR);
-		$inclui->bindValue(2, $user['nome_usuario'], PDO::PARAM_STR);
-		$inclui->bindValue(3, $user['cpf'], PDO::PARAM_STR);
-		$inclui->bindValue(4, $user['email_usuario'], PDO::PARAM_STR);
-		$inclui->bindValue(5, $user['id_grupo'], PDO::PARAM_STR);
-		$inclui->bindValue(6, $user['id_status'], PDO::PARAM_STR);
-		$inclui->execute();
-}
-
-function check_authorization ($user, $database){
-	     $SQL="SELECT `saldo` FROM `carteira_usuario` WHERE `id_usuario` = ?";
-		 $id_usuario=$user['id_usuario'];
-		 $saldo = $database->prepare($SQL);
-				  $saldo->bindValue(1, $id_usuario);
-				  $saldo->execute();
-		$saldo = $saldo->fetchAll(\PDO::FETCH_ASSOC);
-		$saldo = $saldo[0];
-		$saldo = $saldo['saldo'];
-		$teste = ($saldo>=100);
-		 $status=$user['id_status'];
-		 if ($status==2){
-			 echo "Impossível realizar a compra. A matrícula informada está trancada. <br>";
+function check_authorization ($user){
+		 if ($user['ID_STATUS']==2){
+		 	 $_SESSION['ERROR']=ENROLLMENT_DROPPED;
 			 return false;
 		 }
+
 		 else{
-			if ($saldo>=100){
-				echo $saldo;
-				echo "<br>";
-				echo "Impossível realizar a compra. A matrícula informada já atingiu o limite máximo em créditos permitidos <br>";
+			if ($user['SALDO']>=100){
+				$_SESSION['ERROR']=TOO_MUCH_CREDIT;
 				return false;
 			}
 			else{
-				$_SESSION['saldo']=$saldo;
+				$_SESSION['saldo']=$user['SALDO'];
 				return true;
 			}
 		 }
