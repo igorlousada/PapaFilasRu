@@ -338,7 +338,6 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 	//passa o parametro da matricula pra busca do pdo
 	$stmt->bindParam(":MATRICULA", $json->MATRICULA);
 	$stmt->execute();
-	//tratar select vazio 
 	$usuario = $stmt->fetch(PDO::FETCH_OBJ);
 	
 	//se o usuario nao existir no bd, retornara null e entrará no if de erro.
@@ -348,21 +347,8 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 		return $return;
 	}
 
-/*//////////////////////
-return = $response->withJson($registros)
-				->withHeader('Content-type', 'application/json');
-				#caso não encontre o usuario o retorno será 204
-				
-/////////////*/
-	
-
-	// $codigo_status $hora_atual $id_usuario $saldo_inserico $valor_compra 
-
-	//abrindo conexao com banco de dados
-	try{$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","");
-	}
-	catch(PDOException $error){echo $error->getMessage();
-	}
+	//fecha o cursor do pdo
+	$stmt->closecursor();
 
 		
 	$sql2="INSERT 	INTO historico_compra 	(codigo_status, data_compra, id_historico, id_usuario, saldo_inserido, valor_compra) 
