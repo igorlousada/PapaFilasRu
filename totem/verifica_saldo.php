@@ -2,6 +2,8 @@
 
 define ('USER_NOT_FOUND_IN_CHECK', 5);
 
+
+//verificar o fechamento dessa sessão após finalizar a página
 session_start();
 
 if (isset($_POST['NumberLote'])){
