@@ -1,0 +1,25 @@
+<ion-view title="Menu Inicial" id="page9" style="background-color: rgb(51, 123, 25);">
+  <ion-content padding="true" class="has-header" style="background: url(img/Papaleguas.jpg) no-repeat center;background-size:cover;">
+    <form id="login-form" class="list">
+    <ion-list id="login-form">
+    <div class="spacer" style="height: 40px;"></div>
+    <label class="item item-input">
+      <span class="input-label">Matrícula:</span>
+        <input name="matricula" placeholder="00/0000000" type="text" maxlength="10" id="Matricula">
+    </label>
+    <label class="item item-input">
+      <span class="input-label">CPF:</span>
+        <input name="cpf" placeholder="000.000.000-00" type="text" maxlength="14" id="CPF">
+    </label>
+    <div class="spacer" style="height: 20px;"></div>
+      <a id="login-button1" class="button button-dark button-block" ng-click="login()">Login</a>
+      <div class="spacer" style="height: 40px;"></div>
+      <a ui-sref="status" id="login-button2" class="button button-dark button-block">Status do RU</a>
+      <div class="spacer" style="height: 40px;"></div>
+      <a ui-sref="cardapio" id="login-button3" class="button button-dark button-block">Cardápio</a>
+      <div class="spacer" style="height: 40px;"></div>
+      <!--<a ui-sref="signup" id="login-button5" class="button button-dark button-block">Cadastro</a>-->
+      <!--<a ui-sref="signup()" id="login-button6" class="button button-positive button-block button-clear">Or create an account</a>-->
+    </form>
+  </ion-content>
+</ion-view>
