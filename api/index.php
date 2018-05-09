@@ -336,6 +336,69 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 	$ret = $response->withJson($json)->withHeader('Content-type', 'application/json');
 	return $ret;
 });
+
+
+//metodo /credito/atualizasaldo
+$app->put('/credito/atualizasaldo', function (Request $request, Response $response,array $args) {
+
+### receber a url com o id_transacao no final 
+##### pegar esse id e mandar pro pagseguro pra receber o xml com os dados
+##### receber o xml do pag seguro e pegar referencia (id_historico)
+##### procurar o id_usuario ########
+##### que mais?? ...
+##### 
+
+	$objeto_put = json_decode($request->getBody()); //recebendo o json da pagina html
+	//$id_transacao = $objeto_put->ID_TRANSACAO;
+
+##### Utilizando o CURL para solicitar info do pag seguro
+//exemplo de id_transações tiradas do pagseguro do moises
+//F927A5AC5E4D4D949F951FF237C115B9
+//F927A5AC5E4D4D949F951FF237C115B9
+//69846EE71977444199A132DB2BD3F61B
+	$id_transacao = "69846EE71977444199A132DB2BD3F61B";
+
+
+	$curl = curl_init();
+
+	curl_setopt_array($curl, array(
+		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/'.$id_transacao.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_ENCODING => "",
+		CURLOPT_MAXREDIRS => 10,
+		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		CURLOPT_CUSTOMREQUEST => "GET",
+		CURLOPT_POSTFIELDS => "",
+		CURLOPT_HTTPHEADER => array("content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"),
+	));
+
+	$resposta = curl_exec($curl);
+	$err = curl_error($curl);
+
+	$resposta = simplexml_load_string($resposta);
+	var_dump ($resposta);
+
+/*	curl_close($curl);
+
+	if ($err) {
+		echo "cURL Error #:" . $err;
+	} else {
+		$return = $response->withJson($addCreditos)
+		->withHeader('Content-type', 'application/json');
+		return $return;
+	}
+*/
+
+ 
+
+});
+
+
+
+
+
+
+
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 
 
