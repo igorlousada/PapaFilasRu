@@ -29,35 +29,25 @@ $app->get('/usuarios', function (Request $request, Response $response) {
  
     # Variável que irá ser o retorno (pacote JSON)...
    $retorno = array();
- 
-    # Abrir conexão com banco de dados
-    $conexao = mysqli_connect("localhost","root","P@p@filas2018bd","papafilas_homolog");
- 
-    # Validar se houve conexão
-    if(!$conexao){ echo "Não foi possível se conectar ao banco de dados"; exit;}
- 
-    # Selecionar todos os cadastros da tabela 'usuarios'
-    $registros = mysqli_query($conexao,"select * from usuario");
- 
-    # Transformando resultset em array, caso ache registros
- if(mysqli_num_rows($registros)>0){
-        while($usuario = mysqli_fetch_array($registros)) {
-            $registro = array(
-                        "ID_USUARIO"   		=> $usuario["id_usuario"],
-						"MATRICULA"   		=> $usuario["matricula_usuario"],
-                        "NOME_USUARIO"     	=> utf8_encode($usuario["nome_usuario"]),
-                        "CPF" 				=> $usuario["cpf"],
-                        "EMAIL"    			=> $usuario["email_usuario"],
-						"ID_GRUPO"   		=> $usuario["id_grupo"],
-						"ID_STATUS"			=> $usuario["id_status"],
-                    );
-            $retorno[] = $registro;
-        }  
+   
+	$pdo = db_connect();
+	$sql = "SELECT * FROM usuario";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	if($stmt->rowCount()>0){		
+		while($resultado = $stmt->fetch(PDO::FETCH_ASSOC)){
+		    $registro = array(
+                        "ID_USUARIO"   		=> $resultado["id_usuario"],
+						"MATRICULA"   		=> $resultado["matricula_usuario"],
+                        "NOME_USUARIO"     	=> utf8_encode($resultado["nome_usuario"]),
+                        "CPF" 				=> $resultado["cpf"],
+                        "EMAIL"    			=> $resultado["email_usuario"],
+						"ID_GRUPO"   		=> $resultado["id_grupo"],
+						"ID_STATUS"			=> $resultado["id_status"],
+                    );					
+			$retorno[] = $registro;
+		}
 	}
- 
-    # Encerrar conexão
-    mysqli_close($conexao);
-	
 	#exibindo resultados
 	$return = $response->withJson($retorno);
 	return $return;
