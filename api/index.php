@@ -293,7 +293,7 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 	$json =  json_decode($request->getBody());	
 	
 	//pegando hora atual
-	$hora_atual = date("Y-m-d H:i"); // tem que ver qual o formato certo ainda.
+	$hora_atual = date("Y-m-d H:i:s"); // tem que ver qual o formato certo ainda.
 	//abrindo conexao com banco de dados
 
 	$pdo = db_connect();
