@@ -4,6 +4,9 @@ use \Psr\Http\Message\ResponseInterface as Response;
 require './vendor/autoload.php';
 $app = new \Slim\App;
 
+#arquivo com funcao db_connect() que retorna uma conexao dbo com o BD
+require 'conectadb.php';
+
 
 #metodo de teste 1
 $app->get('/', function (Request $request, Response $response) use ($app) {
@@ -11,14 +14,14 @@ $app->get('/', function (Request $request, Response $response) use ($app) {
     return $response;	
 });
 
-/*
+
 #metodo de teste 2
 $app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
     $name = $args['name'];
     $response->getBody()->write("Hello, $name");
     return $response;
 });
-*/
+
 
 
 #metodo para listar todos os usuarios
@@ -28,7 +31,7 @@ $app->get('/usuarios', function (Request $request, Response $response) {
    $retorno = array();
  
     # Abrir conexão com banco de dados
-    $conexao = mysqli_connect("localhost","root","","papafilas_homolog");
+    $conexao = mysqli_connect("localhost","root","P@p@filas2018bd","papafilas_homolog");
  
     # Validar se houve conexão
     if(!$conexao){ echo "Não foi possível se conectar ao banco de dados"; exit;}
@@ -68,7 +71,7 @@ $app->post('/usuarios', function (Request $request, Response $response) use ($ap
 
 	#tenta faze a conexao via PDO
 	try{
-		$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","");//P@p@filas2018bd
+		$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","P@p@filas2018bd");
 	}catch(PDOException $e){
 		#exibe a messagem de erro caso não consiga
 		echo $e->getMessage();
@@ -102,13 +105,8 @@ $app->post('/usuarios', function (Request $request, Response $response) use ($ap
 #metodo retorna usuario e saldo
 $app->get('/usuarios/{matricula}', function (Request $request, Response $response,array $args) {
 	$matricula = $args['matricula'];
- 
- 	try{
-		$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","");
-	}catch(PDOException $e){
-		#exibe a messagem de erro caso não consiga
-		echo $e->getMessage();
-	}
+
+	$pdo = db_connect();
  
 	$sql="SELECT usu.*, round(cart.saldo,2) as saldo FROM usuario as usu inner join carteira_usuario as cart ON usu.id_usuario= cart.id_usuario where matricula_usuario= :matricula";
 	$stmt=$pdo->prepare($sql);
@@ -135,12 +133,8 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 		
 	#se o usuario não for localizado no sistema PAPAFILAS procura no MW
 	}else{
-		try{
-			$pdomw = new PDO("mysql:host=localhost;dbname=mw_homolog","root","");
-		}catch(PDOException $e){
-			#exibe a messagem de erro caso não consiga
-			echo $e->getMessage();
-		}
+		//função do arquivo conectadb.php para abrir conexão pdo com o banco de dados do MW
+		$pdomw = db_connectMW();
 		
 		$sql2="SELECT matricula,nome,cpf,email,id_status,id_grupo FROM mw_aluno where matricula= :matricula";
 		$stmtmw=$pdomw->prepare($sql2);
@@ -242,7 +236,6 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 #passo 4 com a resposta, chamar um metodo que insere historico e, por sua vez, atualiza o saldo
 $app->get('/notificacoes', function (Request $request, Response $response,array $args) {
 //
-
 if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transaction'){
     //se notificationType for true e = 'transactio',  continuamos
  
@@ -258,17 +251,12 @@ if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transacti
     curl_close($curl);
  
     $transaction = simplexml_load_string($transaction);
-
     echo $transaction;
 }
 	echo "não funcionou o recebimento do id de transaction";
 });
-
-
-
 # (nao esta funcionando) metodo de teste: post na url /notificacoes pra testar o metodo acima.
 # exemplo de notificação enviada pelo PagSeguro (as linhas foram quebradas para facilitar a leitura)
-
 	#############################################################
 	# POST http://lojamodelo.com.br/notificacao HTTP/1.1		#
 	# Host:pagseguro.uol.com.br 								#
@@ -277,12 +265,10 @@ if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transacti
 	# notificationCode=766B9C-AD4B044B04DA-77742F5FA653-E1AB24	#
 	# notificationType=transaction	 							#
 	#############################################################
-
 $app->post('/notificacoes/teste', function (Request $request, Response $response, array $args) {
     $notificationCode = json_decode($request->getBody());
 	
 	$curl = curl_init();
-
 	curl_setopt_array($curl, array(
 		CURLOPT_URL => "http://localhost/dashboard/papafilasRU/codigo/PapaFilasRu/api/notificacoes",
 		CURLOPT_RETURNTRANSFER => true,
@@ -294,14 +280,11 @@ $app->post('/notificacoes/teste', function (Request $request, Response $response
 		CURLOPT_POSTFIELDS => "notificationCode=766B9C-AD4B044B04DA-77742F5FA653-E1AB24",
 		CURLOPT_HTTPHEADER => array("Content-Type:application/x-www-form-urlencoded"),
 	));
-
 	$resposta = curl_exec($curl);
 	$erro = curl_error($curl);
 	$tokenxml = simplexml_load_string($resposta);
 	$addCreditos->URL_TOKEN	= 'https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code='.$tokenxml->code;
-
 	curl_close($curl);
-
 	if ($erro) {
 		echo "cURL Error #:" . $erro;
 	} else {
@@ -312,23 +295,18 @@ $app->post('/notificacoes/teste', function (Request $request, Response $response
 });
 */
 
-//metodo /credito/insereHistorico
-$app->post('/credito/insereHistorico', function (Request $request, Response $response,array $args) {
 
+
+$app->post('/creditos/insereHistorico', function (Request $request, Response $response) {
 	
 	//recebendo o json do post e salvando em array com posicao = parametro do json
 	$json =  json_decode($request->getBody());	
 	
 	//pegando hora atual
 	$hora_atual = date("Y-m-d H:i"); // tem que ver qual o formato certo ainda.
-
 	//abrindo conexao com banco de dados
-	try{
-		$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","");
-	}catch(PDOException $error){
-		#exibe a messagem de erro caso não consiga
-		echo $error->getMessage();
-	}
+
+	$pdo = db_connect();
  
 	//faz a busca pelo id_usuario no bd
 	$sql = "SELECT id_usuario FROM `usuario` WHERE matricula_usuario= :MATRICULA";
@@ -346,44 +324,32 @@ $app->post('/credito/insereHistorico', function (Request $request, Response $res
 		$return = $response->withStatus(204);
 		return $return;
 	}
-
 	//fecha o cursor do pdo
 	$stmt->closecursor();
-
 		
 	$sql2="INSERT 	INTO historico_compra 	(codigo_status, data_compra, id_historico, id_usuario, saldo_inserido, valor_compra) 
 					values 					(:CODIGO_STATUS, :DATA_COMPRA, NULL, :ID_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
 		
 	$codigo_status = 1;
 	$saldo_inserido = 0;
-
-
 	#prepara a insercao e executa no banco
 	$stmt=$pdo->prepare($sql2);				
 	$stmt->bindvalue(':CODIGO_STATUS', $codigo_status, PDO::PARAM_INT);
-	$stmt->bindvalue(":DATA_COMPRA", $hora_atual, PDO::PARAM_STR_CHAR);
+	$stmt->bindvalue(":DATA_COMPRA", $hora_atual);
 	$stmt->bindParam(":ID_USUARIO", $usuario->id_usuario);
 	$stmt->bindvalue(":SALDO_INSERIDO", $saldo_inserido, PDO::PARAM_INT);
 	$stmt->bindParam(":VALOR_COMPRA", $json->SALDO);
 	$stmt->execute();	
 
-	$usuario->id_historico = $pdo->lastInsertId();
+	$json->ID_HISTORICO = $pdo->lastInsertId();
 
-	//id_historico//id_usuario//data_compra//valor_compra//saldo_inserido//codigo_status
-	$resposta = array(	'id_historico' => $usuario->id_historico,
-						'id_usuario' => $usuario->id_usuario,
-						'data_compra' => $hora_atual,
-						'valor_compra' => $json->SALDO,
-						'saldo_inserido' => $saldo_inserido,
-						'codigo_status' => $codigo_status,
-						);
-
-	$ret = $response->withJson($resposta)->withHeader('Content-type', 'application/json');
+	$ret = $response->withJson($json)->withHeader('Content-type', 'application/json');
 	return $ret;
-
-
 });
-
-
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
-$app->run(); 
+
+
+
+
+
+$app->run();
