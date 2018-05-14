@@ -18,9 +18,7 @@ export class ExtratoPage {
     this.nav.setRoot(CompraPage);
   }
 
-  dohome(){
- 	this.nav.setRoot(HomePage);
-  }
+  
 
 
 }
