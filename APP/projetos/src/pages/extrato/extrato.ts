@@ -19,6 +19,9 @@ export class ExtratoPage {
   }
 
   
+  dohome(){
+ 	this.nav.setRoot(HomePage);
+  }
 
 
 }
