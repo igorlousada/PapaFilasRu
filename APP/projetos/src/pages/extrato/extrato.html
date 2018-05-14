@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-navbar color="green">
+    <ion-title>
+      <span ion-text>Extrato</span>
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+<div class="spacer" style="height: 30px;"></div>
+
+
+<ion-grid>
+
+  <ion-row>
+    <ion-col>
+      <button ion button block large color= "dark" >Data</button> 
+    </ion-col>
+    <ion-col color= "dark">
+      Valor R$
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+  <ion-col>
+      4/05 
+    </ion-col>
+    <ion-col>
+      R$ 25,00
+  </ion-col>
+  </ion-row>
+
+<ion-row>
+  <ion-col>
+      23/04  
+    </ion-col>
+    <ion-col>
+      R$ 2,50
+  </ion-col>
+  </ion-row>
+
+</ion-grid>
+
+    <div>
+    <button ion-button icon-start block color="green" tappable (click)="docompra()">
+        <ion-icon name="card"></ion-icon>
+        Comprar
+    </button>
+    <button ion-button icon-start block color="green" tappable (click)="dohome()">
+        <ion-icon name="home"></ion-icon>
+        Home
+    </button>
+   </div>
+
+
+</ion-content>

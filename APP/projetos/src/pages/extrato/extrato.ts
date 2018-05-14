@@ -1,14 +1,14 @@
 import {Component} from "@angular/core";
 import {NavController} from "ionic-angular";
 import {CompraPage} from '../compra/compra';
-import {ExtratoPage} from '../extrato/extrato';
+import {HomePage} from '../home/home';
 
 
 @Component({
-  selector: 'page-home',
-  templateUrl: 'home.html'
+  selector: 'page-extrato',
+  templateUrl: 'extrato.html'
 })
-export class HomePage {
+export class ExtratoPage {
 
   constructor(public nav: NavController) {
   }
@@ -18,8 +18,9 @@ export class HomePage {
     this.nav.setRoot(CompraPage);
   }
 
-  doextrato(){
- 	this.nav.setRoot(ExtratoPage);
+  dohome(){
+ 	this.nav.setRoot(HomePage);
   }
+
 
 }

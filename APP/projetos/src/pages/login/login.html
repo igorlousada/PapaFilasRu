@@ -37,22 +37,14 @@
       </button>
        <div class="spacer" style="height: 30px;"></div>
       
-       <ion-row no-padding class="other-data">
-          <ion-col no-padding class="column" >
-            <button ion-button icon-left medium full color="green" menuClose (click)="docardapio()">
-              <ion-icon name="home"></ion-icon>
-              Cardápio
+       <button ion-button icon-start block color="green" tappable (click)="docardapio()">
+          <ion-icon name="book"></ion-icon>
+            Cardápio
+          </button>
+       <button ion-button icon-start block color="green" tappable (click)="dostatus()">
+              <ion-icon name="pulse"></ion-icon>
+                Status do RU
             </button>
-          </ion-col>
-          <ion-col no-padding class="column" col-1of2>
-            <button ion-button icon-right medium full color="green" menuClose (click)="logout()">
-              <ion-icon name="log-out"></ion-icon>
-              Status do RU
-            </button>
-          </ion-col>
-
-        </ion-row>
-
       </div>
     </div>
 

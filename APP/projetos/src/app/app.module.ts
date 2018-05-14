@@ -14,20 +14,13 @@ import {WeatherProvider} from "../services/weather";
 
 import {MyApp} from "./app.component";
 
-import {SettingsPage} from "../pages/settings/settings";
-import {CheckoutTripPage} from "../pages/checkout-trip/checkout-trip";
-import {HomePage} from "../pages/home/home";
-import {LoginPage} from "../pages/login/login";
-import {NotificationsPage} from "../pages/notifications/notifications";
-import {RegisterPage} from "../pages/register/register";
-import {SearchLocationPage} from "../pages/search-location/search-location";
-import {TripDetailPage} from "../pages/trip-detail/trip-detail";
-import {TripsPage} from "../pages/trips/trips";
-import {LocalWeatherPage} from "../pages/local-weather/local-weather";
-import {CompraPage} from "../pages/compra/compra";
-import {FilaPage} from "../pages/fila/fila";
-import {CardapioPage} from "../pages/cardapio/cardapio";
 
+import {HomePage} from '../pages/home/home';
+import {LoginPage} from '../pages/login/login';
+import {CompraPage} from '../pages/compra/compra';
+import {ExtratoPage} from '../pages/extrato/extrato';
+import {StatusPage} from '../pages/status/status';
+import {CardapioPage} from '../pages/cardapio/cardapio';
 
 
 // import services
@@ -40,18 +33,11 @@ import {CardapioPage} from "../pages/cardapio/cardapio";
 @NgModule({
   declarations: [
     MyApp,
-    SettingsPage,
-    CheckoutTripPage,
     HomePage,
     LoginPage,
-    LocalWeatherPage,
-    NotificationsPage,
-    RegisterPage,
-    SearchLocationPage,
     CompraPage,
-    TripDetailPage,
-    TripsPage,
-    FilaPage,
+    ExtratoPage,
+    StatusPage,
     CardapioPage
   ],
   imports: [
@@ -70,18 +56,11 @@ import {CardapioPage} from "../pages/cardapio/cardapio";
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    SettingsPage,
-    CheckoutTripPage,
     HomePage,
     LoginPage,
-    LocalWeatherPage,
-    NotificationsPage,
-    RegisterPage,
-    SearchLocationPage,
     CompraPage,
-    TripDetailPage,
-    TripsPage,
-    FilaPage,
+    ExtratoPage,
+    StatusPage,
     CardapioPage
   ],
   providers: [
