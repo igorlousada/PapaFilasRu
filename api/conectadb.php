@@ -2,7 +2,7 @@
 
 function db_connect()
 {
-    $pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","P@p@filas2018bd");
+    $pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","");
   
     return $pdo;
 }

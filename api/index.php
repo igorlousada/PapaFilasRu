@@ -193,7 +193,7 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 		CURLOPT_TIMEOUT => 30,
 		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		CURLOPT_CUSTOMREQUEST => "POST",
-		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&referenceREF=REF1234&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
+		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&reference=$addCreditos->ID_HISTORICO&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
 		CURLOPT_HTTPHEADER => array(
 			"content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"
 		),
@@ -378,7 +378,7 @@ $app->put('/credito/atualizasaldo', function (Request $request, Response $respon
 	$resposta = simplexml_load_string($resposta);
 	var_dump ($resposta);
 
-/*	curl_close($curl);
+	curl_close($curl);
 
 	if ($err) {
 		echo "cURL Error #:" . $err;
@@ -387,7 +387,7 @@ $app->put('/credito/atualizasaldo', function (Request $request, Response $respon
 		->withHeader('Content-type', 'application/json');
 		return $return;
 	}
-*/
+
 
  
 
@@ -398,11 +398,7 @@ $app->put('/credito/atualizasaldo', function (Request $request, Response $respon
 
 
 
-
-// ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
-
-
-
-
-
+###################################################################################
+#########nao apagar essa linha de jeito nenhum. e só codar daqui pra cima #########
+###################################################################################
 $app->run();
