@@ -340,15 +340,10 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 });
 
 
+#############################################################################
 //metodo /credito/atualizasaldo
 $app->put('/creditos/atualizasaldo', function (Request $request, Response $response,array $args) { // LINHA ALTEARADA 14/05/2018  AS 5H33
 
-### receber a url com o id_transacao no final 
-##### pegar esse id e mandar pro pagseguro pra receber o xml com os dados
-##### receber o xml do pag seguro e pegar referencia (id_historico)
-##### procurar o id_usuario ########
-##### que mais?? ...
-##### 
 
 	$objeto_put = json_decode($request->getBody()); //recebendo o json da pagina html
 	//$id_transacao = $objeto_put->ID_TRANSACAO;
@@ -381,13 +376,10 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 	$resposta = simplexml_load_string($resposta); //isso aqui ja retorna como objeto, agora só tratar
 	var_dump ($resposta->date); //alterado 5h51 14/05/2018
 	$status = $resposta->status;
-	var_dump ($status);
-	//var_dump ($resposta->grossAmount);
-	
+	var_dump ($status);	
 	
 	if($status == 3 ){
 		$ID_HISTORICO= $resposta->reference;
-		//$ID_HISTORICO= 35;
 
 		$pdo = db_connect();
  
@@ -413,10 +405,8 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 
 	} 	
 	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
 	$sql1 = "SELECT * FROM `carteira_usuario` WHERE id_usuario= :USUARIO ";
-
-	//$funf= 28;
 
 	
 	//prepara o comando sql acima
@@ -446,37 +436,67 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 
 	//$saldo= $stmt->fetch(PDO::FETCH_OBJ);
 
-		$sql3="UPDATE historico_compra SET  saldo_inserido=1 WHERE id_historico= :HISTORICO";
+	$sql3="UPDATE historico_compra SET  saldo_inserido=1 WHERE id_historico= :HISTORICO";
 	
-
-
 	//prepara o comando sql acima
 	$stmt4=$pdo->prepare($sql3);
 	//passa o parametro da matricula pra busca do pdo
 	 $stmt4->bindParam(":HISTORICO", $ID_HISTORICO);
-	
 
 	$stmt4->execute();
-
-	//$saldo= $stmt->fetch(PDO::FETCH_OBJ);
-
 	
 	
 	}   
-
-
- 
-
 });
 
 
 
+##################################################################
+#metodo retorna historico de compras de um usuario
+
+$app->get('/historico/{matricula}', function (Request $request, Response $response,array $args) {
+	$matricula = $args['matricula'];
+
+	$pdo = db_connect();
+ 
+	$sql = "SELECT * FROM `historico_compra` WHERE matricula_usuario= :matricula";
+	$stmt=$pdo->prepare($sql);
+	$stmt->bindParam(":matricula", $matricula);
+	$stmt->execute();
+	
+
+
+	if($stmt->rowCount()>0){
+		while($resultado = $stmt->fetch(PDO::FETCH_ASSOC)){
+		            $registro = array(
+                        "CODIGO_STATUS"   	=> $resultado["codigo_status"],
+						"DATA_COMPRA"  		=> $resultado["data_compra"],
+                        "ID_HISTORICO"     	=> $resultado["id_historico"],
+                        "ID_USUARIO" 		=> $resultado["id_usuario"],
+                        "MATRICULA_USUARIO" => $resultado["matricula_usuario"],
+						"SALDO_INSERIDO"   	=> $resultado["saldo_inserido"],
+						"VALOR_COMPRA"		=> $resultado["valor_compra"],
+                    );
+                    $vetor_registros[] = $registro; 
+		 }
+		
+	$return = $response->withJson($vetor_registros)->withHeader('Content-type', 'application/json');
+
+	return $return;
+	
+	}
+	
+	#se o usuario não for localizado no sistema PAPAFILAS, retorna erro 204
+	else{
+				$return = $response->withJson($registros)
+				->withHeader('Content-type', 'application/json');
+				#caso não encontre o usuario o retorno será 204
+				$return = $response->withStatus(204);
+				return $return;
+	}
+	
+});
 
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
-
-
-
-
-
 $app->run();
