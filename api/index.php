@@ -193,7 +193,7 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 		CURLOPT_TIMEOUT => 30,
 		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		CURLOPT_CUSTOMREQUEST => "POST",
-		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&referenceREF=REF1234&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
+		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&reference=$addCreditos->ID_HISTORICO&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
 		CURLOPT_HTTPHEADER => array(
 			"content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"
 		),
@@ -203,6 +203,8 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 	$err = curl_error($curl);
 	$tokenxml = simplexml_load_string($resposta);
 	$addCreditos->URL_TOKEN	= 'https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code='.$tokenxml->code;
+
+
 
 	curl_close($curl);
 
@@ -356,7 +358,7 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 //F927A5AC5E4D4D949F951FF237C115B9
 //F927A5AC5E4D4D949F951FF237C115B9
 //69846EE71977444199A132DB2BD3F61B
-	$id_transacao = "6CE07153-466E-4BB4-9417-0DBCF3377A0B"; //LINHA ALTEARADA 14/05/2018  AS 5H33
+	$id_transacao = "50188C5FB4B8432CA13AB9D6863EB5A0"; //LINHA ALTEARADA 14/05/2018  AS 5H33
 
 	
 	$curl = curl_init();
