@@ -193,7 +193,7 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 		CURLOPT_TIMEOUT => 30,
 		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		CURLOPT_CUSTOMREQUEST => "POST",
-		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&reference=$addCreditos->ID_HISTORICO&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
+		CURLOPT_POSTFIELDS => "email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45&currency=BRL&itemId1=0001&itemDescription1=Creditos RU&itemAmount1=$addCreditos->SALDO&itemQuantity1=1&referenceREF=REF1234&senderName=$addCreditos->NOME_USUARIO&senderEmail=$addCreditos->EMAIL&shippingAddressRequired=false",
 		CURLOPT_HTTPHEADER => array(
 			"content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"
 		),
@@ -339,7 +339,7 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 
 
 //metodo /credito/atualizasaldo
-$app->put('/credito/atualizasaldo', function (Request $request, Response $response,array $args) {
+$app->put('/creditos/atualizasaldo', function (Request $request, Response $response,array $args) { // LINHA ALTEARADA 14/05/2018  AS 5H33
 
 ### receber a url com o id_transacao no final 
 ##### pegar esse id e mandar pro pagseguro pra receber o xml com os dados
@@ -356,13 +356,13 @@ $app->put('/credito/atualizasaldo', function (Request $request, Response $respon
 //F927A5AC5E4D4D949F951FF237C115B9
 //F927A5AC5E4D4D949F951FF237C115B9
 //69846EE71977444199A132DB2BD3F61B
-	$id_transacao = "69846EE71977444199A132DB2BD3F61B";
+	$id_transacao = "6CE07153-466E-4BB4-9417-0DBCF3377A0B"; //LINHA ALTEARADA 14/05/2018  AS 5H33
 
-
+	
 	$curl = curl_init();
 
 	curl_setopt_array($curl, array(
-		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/'.$id_transacao.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',
+		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v2/transactions/'.$id_transacao.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',  // alterado para versão 2 as 5h47
 		CURLOPT_RETURNTRANSFER => true,
 		CURLOPT_ENCODING => "",
 		CURLOPT_MAXREDIRS => 10,
@@ -375,18 +375,92 @@ $app->put('/credito/atualizasaldo', function (Request $request, Response $respon
 	$resposta = curl_exec($curl);
 	$err = curl_error($curl);
 
-	$resposta = simplexml_load_string($resposta);
-	var_dump ($resposta);
+	
+	$resposta = simplexml_load_string($resposta); //isso aqui ja retorna como objeto, agora só tratar
+	var_dump ($resposta->date); //alterado 5h51 14/05/2018
+	$status = $resposta->status;
+	var_dump ($status);
+	//var_dump ($resposta->grossAmount);
+	
+	
+	if($status == 3 ){
+		$ID_HISTORICO= $resposta->reference;
+		//$ID_HISTORICO= 35;
 
-	curl_close($curl);
+		$pdo = db_connect();
+ 
+	//faz a busca pelo id_usuario no bd
+	$sql = "SELECT * FROM `historico_compra` WHERE id_historico= :HISTORICO";
 
-	if ($err) {
-		echo "cURL Error #:" . $err;
-	} else {
-		$return = $response->withJson($addCreditos)
-		->withHeader('Content-type', 'application/json');
+
+	//prepara o comando sql acima
+	$stmt=$pdo->prepare($sql);
+	//passa o parametro da matricula pra busca do pdo
+	$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+	$stmt->execute();
+	$usuario= $stmt->fetch(PDO::FETCH_OBJ);
+	/*if($stmt->rowCount()<0){
+		$return = $response->withStatus(204);
 		return $return;
-	}
+	} */
+	
+	if($usuario->saldo_inserido == 1){
+
+		$return = $response->withStatus(204);
+		return $return;
+
+	} 	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	$sql1 = "SELECT * FROM `carteira_usuario` WHERE id_usuario= :USUARIO ";
+
+	//$funf= 28;
+
+	
+	//prepara o comando sql acima
+	$stmt2=$pdo->prepare($sql1);
+	//passa o parametro da matricula pra busca do pdo
+	$stmt2->bindParam(":USUARIO", $usuario->id_usuario);
+	$stmt2->execute();
+	$resultado= $stmt2->fetch(PDO::FETCH_OBJ);
+	var_export ($resultado);
+
+	//echo $a= $resultado->saldo;
+	$saldo_acum= $resultado->saldo + $resposta->grossAmount; 
+	//echo $saldo_acum;
+	$id= $saldo_acum;
+	$teste= '25';
+	$sql2="UPDATE carteira_usuario SET  saldo='$id' WHERE id_usuario= :USUARIO";
+	//ECHO "VSF";
+
+
+	//prepara o comando sql acima
+	$stmt3=$pdo->prepare($sql2);
+	//passa o parametro da matricula pra busca do pdo
+	 $stmt3->bindParam(":USUARIO", $usuario->id_usuario);
+	
+
+	$stmt3->execute();
+
+	//$saldo= $stmt->fetch(PDO::FETCH_OBJ);
+
+		$sql3="UPDATE historico_compra SET  saldo_inserido=1 WHERE id_historico= :HISTORICO";
+	
+
+
+	//prepara o comando sql acima
+	$stmt4=$pdo->prepare($sql3);
+	//passa o parametro da matricula pra busca do pdo
+	 $stmt4->bindParam(":HISTORICO", $ID_HISTORICO);
+	
+
+	$stmt4->execute();
+
+	//$saldo= $stmt->fetch(PDO::FETCH_OBJ);
+
+	
+	
+	}   
 
 
  
@@ -397,8 +471,10 @@ $app->put('/credito/atualizasaldo', function (Request $request, Response $respon
 
 
 
+// ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 
-###################################################################################
-#########nao apagar essa linha de jeito nenhum. e só codar daqui pra cima #########
-###################################################################################
+
+
+
+
 $app->run();
