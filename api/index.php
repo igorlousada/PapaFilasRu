@@ -8,6 +8,7 @@ $app = new \Slim\App;
 require 'conectadb.php';
 
 
+
 #metodo de teste 1
 $app->get('/', function (Request $request, Response $response) use ($app) {
     $response->getBody()->write("Bebê de Microservice!");
@@ -21,7 +22,6 @@ $app->get('/hello/{name}', function (Request $request, Response $response, array
     $response->getBody()->write("Hello, $name");
     return $response;
 });
-
 
 
 #metodo para listar todos os usuarios
@@ -95,7 +95,6 @@ $app->post('/usuarios', function (Request $request, Response $response) use ($ap
 #metodo retorna usuario e saldo
 $app->get('/usuarios/{matricula}', function (Request $request, Response $response,array $args) {
 	$matricula = $args['matricula'];
-
 	$pdo = db_connect();
  
 	$sql="SELECT usu.*, round(cart.saldo,2) as saldo FROM usuario as usu inner join carteira_usuario as cart ON usu.id_usuario= cart.id_usuario where matricula_usuario= :matricula";
@@ -168,6 +167,7 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 				
 			#SE NÃO ENCONTRAR NO MW RETORNA STATUS 204
 			}else{
+				$mensagem = new \stdClass();
 				$mensagem->mensagem = "Usuário não encontrado.Verifique a matricula informada";
 				$return = $response->withJson($mensagem)
 				->withStatus(206);
@@ -179,6 +179,7 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 	}
 	
 });
+
 
 #método para solicitar token pagseguro
 $app->post('/creditos/', function (Request $request, Response $response, array $args) {
@@ -342,7 +343,6 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 });
 
 
-
 #metodo método para atualizar o saldo do usuário a partir da página de retorno da compra
 $app->put('/creditos/atualizasaldo', function (Request $request, Response $response,array $args) { // LINHA ALTEARADA 14/05/2018  AS 5H33
 	$objeto_put = json_decode($request->getBody());
@@ -381,13 +381,13 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 	
 	
 	#Se a transação está com status pago e o saldo ainda não foi inserido
-	if($status == 3 || $status == 4  && $usuario->saldo_inserido == 0){
+	if(($status == 3 || $status == 4)  && $usuario->saldo_inserido == 0){
 		
 		#libera a conexão pdo para nova utilização
 		$stmt->closecursor();
 		
 		$sql2="UPDATE carteira_usuario SET  saldo=saldo+'$resposta->grossAmount' WHERE id_usuario= :USUARIO;
-			UPDATE historico_compra SET  saldo_inserido=1 WHERE id_historico= :HISTORICO";
+			UPDATE historico_compra SET  saldo_inserido=1,codigo_status='$status' WHERE id_historico= :HISTORICO";
 
 		$stmt=$pdo->prepare($sql2);
 		$stmt->bindParam(":USUARIO", $usuario->id_usuario);
@@ -395,22 +395,23 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 		$stmt->execute();
 	}
 	
-	if($status == 3 || $status == 4 && $usuario->saldo_inserido == 1){
-		
+	if(($status == 3 || $status == 4) && $usuario->saldo_inserido == 1){
+				$mensagem = new \stdClass();
 				$mensagem->mensagem = "Os créditos dessa compra já foram inseridos em sua conta.";
 				$return = $response->withJson($mensagem)
 				->withStatus(206);
+				echo "$usuario->saldo_inserido";
 				return $return;
 	}
 	if($status == 1 || $status == 2){
-		
+				$mensagem = new \stdClass();
 				$mensagem->mensagem = "Sua compra está sendo processada. Assim que aprovada seus créditos serão inseridos";
 				$return = $response->withJson($mensagem)
 				->withStatus(206);
 				return $return;
 	}
 	if($status == 7){
-		
+				$mensagem = new \stdClass();
 				$mensagem->mensagem = "Desculpe mas seu pagamento não foi aprovado pela operadora. Tente novamente ou verifique os dados inseridos";
 				$return = $response->withJson($mensagem)
 				->withStatus(206);
@@ -418,7 +419,6 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 	}
     
 });
-
 
 
 #metodo retorna historico de compras de um usuario
@@ -453,6 +453,7 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	
 		#se o usuario não for localizado no sistema PAPAFILAS, retorna erro 204
 	}else{
+		$mensagem = new \stdClass();
 		$mensagem->mensagem = "Usuário não encontrado. Verifique a matricula informada";
 		$return = $response->withJson($mensagem)
 		->withStatus(206);
