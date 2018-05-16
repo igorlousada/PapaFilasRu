@@ -168,10 +168,11 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 				
 			#SE NÃO ENCONTRAR NO MW RETORNA STATUS 204
 			}else{
-				$return = $response->withJson($registros)
-				->withHeader('Content-type', 'application/json');
+				$mensagem->mensagem = "Usuário não encontrado.Verifique a matricula informada";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
 				#caso não encontre o usuario o retorno será 204
-				$return = $response->withStatus(204);
+				//$return->withStatus(204);
 				return $return;
 			}
 		
@@ -288,20 +289,20 @@ $app->post('/notificacoes/teste', function (Request $request, Response $response
 */
 
 
-
+#método para inserir historico de compra para o usuário
 $app->post('/creditos/insereHistorico', function (Request $request, Response $response) {
 	
 	//recebendo o json do post e salvando em array com posicao = parametro do json
 	$json =  json_decode($request->getBody());	
 	
 	//pegando hora atual
-	$hora_atual = date("Y-m-d H:i:s"); // tem que ver qual o formato certo ainda.
+	$hora_atual = date("Y-m-d H:i:s");
 	//abrindo conexao com banco de dados
 
 	$pdo = db_connect();
  
 	//faz a busca pelo id_usuario no bd
-	$sql = "SELECT id_usuario FROM `usuario` WHERE matricula_usuario= :MATRICULA";
+	$sql = "SELECT id_usuario, matricula_usuario FROM `usuario` WHERE matricula_usuario= :MATRICULA";
 	
 	//prepara o comando sql acima
 	$stmt=$pdo->prepare($sql);
@@ -319,8 +320,8 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 	//fecha o cursor do pdo
 	$stmt->closecursor();
 		
-	$sql2="INSERT 	INTO historico_compra 	(codigo_status, data_compra, id_historico, id_usuario, saldo_inserido, valor_compra) 
-					values 					(:CODIGO_STATUS, :DATA_COMPRA, NULL, :ID_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
+	$sql2="INSERT 	INTO historico_compra 	(codigo_status, data_compra, id_historico, id_usuario, matricula_usuario, saldo_inserido, valor_compra) 
+					values 					(:CODIGO_STATUS, :DATA_COMPRA, NULL, :ID_USUARIO,:MATRICULA_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
 		
 	$codigo_status = 1;
 	$saldo_inserido = 0;
@@ -329,6 +330,7 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 	$stmt->bindvalue(':CODIGO_STATUS', $codigo_status, PDO::PARAM_INT);
 	$stmt->bindvalue(":DATA_COMPRA", $hora_atual);
 	$stmt->bindParam(":ID_USUARIO", $usuario->id_usuario);
+	$stmt->bindParam(":MATRICULA_USUARIO", $usuario->matricula_usuario);
 	$stmt->bindvalue(":SALDO_INSERIDO", $saldo_inserido, PDO::PARAM_INT);
 	$stmt->bindParam(":VALOR_COMPRA", $json->SALDO);
 	$stmt->execute();	
@@ -340,26 +342,18 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 });
 
 
-#############################################################################
-//metodo /credito/atualizasaldo
+
+#metodo método para atualizar o saldo do usuário a partir da página de retorno da compra
 $app->put('/creditos/atualizasaldo', function (Request $request, Response $response,array $args) { // LINHA ALTEARADA 14/05/2018  AS 5H33
+	$objeto_put = json_decode($request->getBody());
 
+	//$id_transacao = "50188C5FB4B8432CA13AB9D6863EB5A0"; 
 
-	$objeto_put = json_decode($request->getBody()); //recebendo o json da pagina html
-	//$id_transacao = $objeto_put->ID_TRANSACAO;
-
-##### Utilizando o CURL para solicitar info do pag seguro
-//exemplo de id_transações tiradas do pagseguro do moises
-//F927A5AC5E4D4D949F951FF237C115B9
-//F927A5AC5E4D4D949F951FF237C115B9
-//69846EE71977444199A132DB2BD3F61B
-	$id_transacao = "50188C5FB4B8432CA13AB9D6863EB5A0"; //LINHA ALTEARADA 14/05/2018  AS 5H33
-
-	
+	#busca informações da transação no pagseguro
 	$curl = curl_init();
 
 	curl_setopt_array($curl, array(
-		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v2/transactions/'.$id_transacao.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',  // alterado para versão 2 as 5h47
+		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v2/transactions/'.$objeto_put->ID_TRANSACAO.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',  // alterado para versão 2 as 5h47
 		CURLOPT_RETURNTRANSFER => true,
 		CURLOPT_ENCODING => "",
 		CURLOPT_MAXREDIRS => 10,
@@ -368,92 +362,66 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 		CURLOPT_POSTFIELDS => "",
 		CURLOPT_HTTPHEADER => array("content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"),
 	));
-
 	$resposta = curl_exec($curl);
 	$err = curl_error($curl);
 
-	
-	$resposta = simplexml_load_string($resposta); //isso aqui ja retorna como objeto, agora só tratar
-	var_dump ($resposta->date); //alterado 5h51 14/05/2018
+	#trata a resposta recebida do pagseguro
+	$resposta = simplexml_load_string($resposta);
 	$status = $resposta->status;
-	var_dump ($status);	
-	
-	if($status == 3 ){
-		$ID_HISTORICO= $resposta->reference;
+	$ID_HISTORICO= $resposta->reference;
 
-		$pdo = db_connect();
- 
-	//faz a busca pelo id_usuario no bd
+
+	#busca as informações da transação no banco de dados do papafilas
+	$pdo = db_connect();
 	$sql = "SELECT * FROM `historico_compra` WHERE id_historico= :HISTORICO";
-
-
-	//prepara o comando sql acima
-	$stmt=$pdo->prepare($sql);
-	//passa o parametro da matricula pra busca do pdo
+	$stmt=$pdo->prepare($sql);	
 	$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
 	$stmt->execute();
 	$usuario= $stmt->fetch(PDO::FETCH_OBJ);
-	/*if($stmt->rowCount()<0){
-		$return = $response->withStatus(204);
-		return $return;
-	} */
-	
-	if($usuario->saldo_inserido == 1){
-
-		$return = $response->withStatus(204);
-		return $return;
-
-	} 	
-	
-	//////////////////////////////////////////////////////////////////////////////
-	$sql1 = "SELECT * FROM `carteira_usuario` WHERE id_usuario= :USUARIO ";
-
-	
-	//prepara o comando sql acima
-	$stmt2=$pdo->prepare($sql1);
-	//passa o parametro da matricula pra busca do pdo
-	$stmt2->bindParam(":USUARIO", $usuario->id_usuario);
-	$stmt2->execute();
-	$resultado= $stmt2->fetch(PDO::FETCH_OBJ);
-	var_export ($resultado);
-
-	//echo $a= $resultado->saldo;
-	$saldo_acum= $resultado->saldo + $resposta->grossAmount; 
-	//echo $saldo_acum;
-	$id= $saldo_acum;
-	$teste= '25';
-	$sql2="UPDATE carteira_usuario SET  saldo='$id' WHERE id_usuario= :USUARIO";
-	//ECHO "VSF";
-
-
-	//prepara o comando sql acima
-	$stmt3=$pdo->prepare($sql2);
-	//passa o parametro da matricula pra busca do pdo
-	 $stmt3->bindParam(":USUARIO", $usuario->id_usuario);
-	
-
-	$stmt3->execute();
-
-	//$saldo= $stmt->fetch(PDO::FETCH_OBJ);
-
-	$sql3="UPDATE historico_compra SET  saldo_inserido=1 WHERE id_historico= :HISTORICO";
-	
-	//prepara o comando sql acima
-	$stmt4=$pdo->prepare($sql3);
-	//passa o parametro da matricula pra busca do pdo
-	 $stmt4->bindParam(":HISTORICO", $ID_HISTORICO);
-
-	$stmt4->execute();
 	
 	
-	}   
+	#Se a transação está com status pago e o saldo ainda não foi inserido
+	if($status == 3 || $status == 4  && $usuario->saldo_inserido == 0){
+		
+		#libera a conexão pdo para nova utilização
+		$stmt->closecursor();
+		
+		$sql2="UPDATE carteira_usuario SET  saldo=saldo+'$resposta->grossAmount' WHERE id_usuario= :USUARIO;
+			UPDATE historico_compra SET  saldo_inserido=1 WHERE id_historico= :HISTORICO";
+
+		$stmt=$pdo->prepare($sql2);
+		$stmt->bindParam(":USUARIO", $usuario->id_usuario);
+		$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+		$stmt->execute();
+	}
+	
+	if($status == 3 || $status == 4 && $usuario->saldo_inserido == 1){
+		
+				$mensagem->mensagem = "Os créditos dessa compra já foram inseridos em sua conta.";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+	if($status == 1 || $status == 2){
+		
+				$mensagem->mensagem = "Sua compra está sendo processada. Assim que aprovada seus créditos serão inseridos";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+	if($status == 7){
+		
+				$mensagem->mensagem = "Desculpe mas seu pagamento não foi aprovado pela operadora. Tente novamente ou verifique os dados inseridos";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+    
 });
 
 
 
-##################################################################
 #metodo retorna historico de compras de um usuario
-
 $app->get('/historico/{matricula}', function (Request $request, Response $response,array $args) {
 	$matricula = $args['matricula'];
 
@@ -481,18 +449,14 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 		 }
 		
 	$return = $response->withJson($vetor_registros)->withHeader('Content-type', 'application/json');
-
 	return $return;
 	
-	}
-	
-	#se o usuario não for localizado no sistema PAPAFILAS, retorna erro 204
-	else{
-				$return = $response->withJson($registros)
-				->withHeader('Content-type', 'application/json');
-				#caso não encontre o usuario o retorno será 204
-				$return = $response->withStatus(204);
-				return $return;
+		#se o usuario não for localizado no sistema PAPAFILAS, retorna erro 204
+	}else{
+		$mensagem->mensagem = "Usuário não encontrado. Verifique a matricula informada";
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
+		return $return;
 	}
 	
 });
