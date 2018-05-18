@@ -462,6 +462,12 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	
 });
 
+#que porra de envio chato
+$app->post('/notificacaoPagSeguro', function (Request $request, Response $response) {
+	$objeto_post = parse_str($request->getBody());
+
+});
+
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
