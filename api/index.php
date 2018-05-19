@@ -220,76 +220,6 @@ $app->post('/creditos/', function (Request $request, Response $response, array $
 });
 
 
-/*
-# (nao esta funcionando) 
-### Metodo que recebe um codigo de notificação de mudanca de status do pagseguro, envia de volta
-###	esse codigo para a api do pagseguro e recebe as informações da mudanca de status.
-#passo 1 receber em uma url (tipo papafilasru/api/notificacoes) o codigo enviado pela api do pagseguro
-#passo 2 salvar o valor da variável notificationCode, que é o codigo da notificacao
-#passo 3 fazer uma requisicao (por meio de http.get??) à api do pagseguro com o notificationCode e receber a resposta em xml
-#passo 4 com a resposta, chamar um metodo que insere historico e, por sua vez, atualiza o saldo
-$app->get('/notificacoes', function (Request $request, Response $response,array $args) {
-//
-if(isset($_POST['notificationType']) && $_POST['notificationType'] == 'transaction'){
-    //se notificationType for true e = 'transactio',  continuamos
- 
-    $email = 'moises.dandico23@gmail.com';
-    $token = '93D0433C38974DD2B3001F53B30CEA45';
- 
-    $url = 'https://ws.sandbox.pagseguro.uol.com.br/v2/transactions/notifications/' . $_POST['notificationCode'] . '?email=' . $email . '&token=' . $token;
- 
-    $curl = curl_init($url);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $transaction= curl_exec($curl);
-    curl_close($curl);
- 
-    $transaction = simplexml_load_string($transaction);
-    echo $transaction;
-}
-	echo "não funcionou o recebimento do id de transaction";
-});
-# (nao esta funcionando) metodo de teste: post na url /notificacoes pra testar o metodo acima.
-# exemplo de notificação enviada pelo PagSeguro (as linhas foram quebradas para facilitar a leitura)
-	#############################################################
-	# POST http://lojamodelo.com.br/notificacao HTTP/1.1		#
-	# Host:pagseguro.uol.com.br 								#
-	# Content-Length:85											#
-	# Content-Type:application/x-www-form-urlencoded			#
-	# notificationCode=766B9C-AD4B044B04DA-77742F5FA653-E1AB24	#
-	# notificationType=transaction	 							#
-	#############################################################
-$app->post('/notificacoes/teste', function (Request $request, Response $response, array $args) {
-    $notificationCode = json_decode($request->getBody());
-	
-	$curl = curl_init();
-	curl_setopt_array($curl, array(
-		CURLOPT_URL => "http://localhost/dashboard/papafilasRU/codigo/PapaFilasRu/api/notificacoes",
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_ENCODING => "",
-		CURLOPT_MAXREDIRS => 10,
-		CURLOPT_TIMEOUT => 30,
-		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		CURLOPT_CUSTOMREQUEST => "POST",
-		CURLOPT_POSTFIELDS => "notificationCode=766B9C-AD4B044B04DA-77742F5FA653-E1AB24",
-		CURLOPT_HTTPHEADER => array("Content-Type:application/x-www-form-urlencoded"),
-	));
-	$resposta = curl_exec($curl);
-	$erro = curl_error($curl);
-	$tokenxml = simplexml_load_string($resposta);
-	$addCreditos->URL_TOKEN	= 'https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code='.$tokenxml->code;
-	curl_close($curl);
-	if ($erro) {
-		echo "cURL Error #:" . $erro;
-	} else {
-		$return = $response->withJson($addCreditos)
-		->withHeader('Content-type', 'application/json');
-		return $return;
-	}
-});
-*/
-
-
 #método para inserir historico de compra para o usuário
 $app->post('/creditos/insereHistorico', function (Request $request, Response $response) {
 	
@@ -462,10 +392,77 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	
 });
 
-#que porra de envio chato
-$app->post('/notificacaoPagSeguro', function (Request $request, Response $response) {
-	$objeto_post = parse_str($request->getBody());
+$app->post('/creditos/notificacaops', function (Request $request, Response $response) {
+	parse_str($request->getBody());
 
+		#busca informações da transação no pagseguro
+	$curl = curl_init();
+
+	curl_setopt_array($curl, array(
+		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/'.$notificationCode.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',  // alterado para versão 2 as 5h47
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_ENCODING => "",
+		CURLOPT_MAXREDIRS => 10,
+		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		CURLOPT_CUSTOMREQUEST => "GET",
+		CURLOPT_POSTFIELDS => "",
+		CURLOPT_HTTPHEADER => array("content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"),
+	));
+	$resposta = curl_exec($curl);
+	$err = curl_error($curl);
+
+	#trata a resposta recebida do pagseguro
+	$resposta = simplexml_load_string($resposta);
+	$status = $resposta->status;
+	$ID_HISTORICO= $resposta->reference;
+
+	#busca as informações da transação no banco de dados do papafilas
+	$pdo = db_connect();
+	$sql = "SELECT * FROM `historico_compra` WHERE id_historico= :HISTORICO";
+	$stmt=$pdo->prepare($sql);	
+	$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+	$stmt->execute();
+	$usuario= $stmt->fetch(PDO::FETCH_OBJ);
+	
+	
+	#Se a transação está com status pago e o saldo ainda não foi inserido
+	if(($status == 3 || $status == 4)  && $usuario->saldo_inserido == 0){
+		
+		#libera a conexão pdo para nova utilização
+		$stmt->closecursor();
+		
+		$sql2="UPDATE carteira_usuario SET  saldo=saldo+'$resposta->grossAmount' WHERE id_usuario= :USUARIO;
+			UPDATE historico_compra SET  saldo_inserido=1,codigo_status='$status' WHERE id_historico= :HISTORICO";
+
+		$stmt=$pdo->prepare($sql2);
+		$stmt->bindParam(":USUARIO", $usuario->id_usuario);
+		$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+		$stmt->execute();
+	}
+	
+	if(($status == 3 || $status == 4) && $usuario->saldo_inserido == 1){
+				$mensagem = new \stdClass();
+				$mensagem->mensagem = "Os créditos dessa compra já foram inseridos em sua conta.";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				echo "$usuario->saldo_inserido";
+				return $return;
+	}
+	if($status == 1 || $status == 2){
+				$mensagem = new \stdClass();
+				$mensagem->mensagem = "Sua compra está sendo processada. Assim que aprovada seus créditos serão inseridos";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+	if($status == 7){
+				$mensagem = new \stdClass();
+				$mensagem->mensagem = "Desculpe mas seu pagamento não foi aprovado pela operadora. Tente novamente ou verifique os dados inseridos";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+	
 });
 
 
