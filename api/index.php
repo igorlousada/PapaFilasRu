@@ -53,44 +53,6 @@ $app->get('/usuarios', function (Request $request, Response $response) {
 	return $return;
 });
 
-#método para inserir usuario por metodo post ====MÉTODO NÃO ESTÁ SENDO UTILIZADO====
-#=======MANTIDO NO ARQUIVO COMO MEIO DE REFERENCIA==================================
-$app->post('/usuarios', function (Request $request, Response $response) use ($app) {
-	$criaUsuario = json_decode($request->getBody());
-
-
-	#tenta faze a conexao via PDO
-	try{
-		$pdo = new PDO("mysql:host=localhost;dbname=papafilas_homolog","root","P@p@filas2018bd");
-	}catch(PDOException $e){
-		#exibe a messagem de erro caso não consiga
-		echo $e->getMessage();
-	}
-		#cria a variavel sql com o comando sql.
-	$sql = "INSERT INTO usuario (matricula_usuario,nome_usuario,cpf,email_usuario,id_grupo,id_status) 
-	values (:MATRICULA,:NOME_USUARIO,:CPF,:EMAIL,:ID_GRUPO,:ID_STATUS) ";
-	
-		#prepara o comando sql
-	$stmt = $pdo->prepare($sql);
-	
-		#atribui os valores de forma segura
-	$stmt->bindParam(":MATRICULA", $criaUsuario->MATRICULA);
-	$stmt->bindParam(":NOME_USUARIO", $criaUsuario->NOME_USUARIO);
-	$stmt->bindParam(":CPF", $criaUsuario->CPF);
-	$stmt->bindParam(":EMAIL", $criaUsuario->EMAIL);
-	$stmt->bindParam(":ID_GRUPO", $criaUsuario->ID_GRUPO);
-	$stmt->bindParam(":ID_STATUS", $criaUsuario->ID_STATUS);
-	
-	#executa o comando e adiciona o usuario ao banco de dados
-	$stmt->execute();
-	
-	#busca o id do usuario inserido
-	$criaUsuario->id_usuario = $pdo->lastInsertId();
-	#retorna os dados do usuario em formato JSON
-	echo json_encode($criaUsuario);
-	
-});
-
 
 #metodo retorna usuario e saldo
 $app->get('/usuarios/{matricula}', function (Request $request, Response $response,array $args) {
@@ -129,53 +91,50 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 		$stmtmw=$pdomw->prepare($sql2);
 		$stmtmw->bindParam(":matricula", $matricula);
 		$stmtmw->execute();
-			#SE LOCALIZAR NO MW CADASTRA NO PAPAFILAS
-			if($stmtmw->rowCount()>0){
-				$resultado = $stmtmw->fetch(PDO::FETCH_OBJ);
-				$stmt->closeCursor();
-				$sql3="INSERT INTO usuario (matricula_usuario,nome_usuario,cpf,email_usuario,id_grupo,id_status) 
-					values (:MATRICULA,:NOME_USUARIO,:CPF,:EMAIL,:ID_GRUPO,:ID_STATUS) ";
-					
-				#prepara a insercao e executa no banco
-				$stmt=$pdo->prepare($sql3);				
-				$stmt->bindParam(":MATRICULA", $resultado->matricula);
-				$stmt->bindParam(":NOME_USUARIO", $resultado->nome);
-				$stmt->bindParam(":CPF", $resultado->cpf);
-				$stmt->bindParam(":EMAIL", $resultado->email);
-				$stmt->bindParam(":ID_GRUPO", $resultado->id_grupo);
-				$stmt->bindParam(":ID_STATUS", $resultado->id_status);					
-				$stmt->execute();
-			
+		#SE LOCALIZAR NO MW CADASTRA NO PAPAFILAS
+		if($stmtmw->rowCount()>0){
+			$resultado = $stmtmw->fetch(PDO::FETCH_OBJ);
+			$stmt->closeCursor();
+			$sql3="INSERT INTO usuario (matricula_usuario,nome_usuario,cpf,email_usuario,id_grupo,id_status) 
+				values (:MATRICULA,:NOME_USUARIO,:CPF,:EMAIL,:ID_GRUPO,:ID_STATUS) ";
+				
+			#prepara a insercao e executa no banco
+			$stmt=$pdo->prepare($sql3);				
+			$stmt->bindParam(":MATRICULA", $resultado->matricula);
+			$stmt->bindParam(":NOME_USUARIO", $resultado->nome);
+			$stmt->bindParam(":CPF", $resultado->cpf);
+			$stmt->bindParam(":EMAIL", $resultado->email);
+			$stmt->bindParam(":ID_GRUPO", $resultado->id_grupo);
+			$stmt->bindParam(":ID_STATUS", $resultado->id_status);					
+			$stmt->execute();
 						
-				
-				
-				$resultado->id_usuario = $pdo->lastInsertId();
-				#retorna um saldo inicial 0.00 quando o usuario está sendo cadastrado no sistema
-				$saldoinicial='0.00';
-				$registro = array(
-                        "ID_USUARIO"   		=> $resultado->id_usuario,
-						"MATRICULA"   		=> $resultado->matricula,
-                        "NOME_USUARIO"     	=> utf8_encode($resultado->nome),
-                        "CPF" 				=> $resultado->cpf,
-                        "EMAIL"    			=> $resultado->email,
-						"ID_GRUPO"   		=> $resultado->id_grupo,
-						"ID_STATUS"			=> $resultado->id_status,
-						"SALDO"				=> $saldoinicial,
-                );
-				$return = $response->withJson($registro)->withHeader('Content-type', 'application/json');
-				return $return;
-				
-			#SE NÃO ENCONTRAR NO MW RETORNA STATUS 204
-			}else{
-				$mensagem = new \stdClass();
-				$mensagem->mensagem = "Usuário não encontrado.Verifique a matricula informada";
-				$return = $response->withJson($mensagem)
-				->withStatus(206);
-				#caso não encontre o usuario o retorno será 204
-				//$return->withStatus(204);
-				return $return;
-			}
-		
+			
+			$resultado->id_usuario = $pdo->lastInsertId();
+			#retorna um saldo inicial 0.00 quando o usuario está sendo cadastrado no sistema
+			$saldoinicial='0.00';
+			$registro = array(
+					"ID_USUARIO"   		=> $resultado->id_usuario,
+					"MATRICULA"   		=> $resultado->matricula,
+					"NOME_USUARIO"     	=> utf8_encode($resultado->nome),
+					"CPF" 				=> $resultado->cpf,
+					"EMAIL"    			=> $resultado->email,
+					"ID_GRUPO"   		=> $resultado->id_grupo,
+					"ID_STATUS"			=> $resultado->id_status,
+					"SALDO"				=> $saldoinicial,
+			);
+			$return = $response->withJson($registro)->withHeader('Content-type', 'application/json');
+			return $return;
+			
+		#SE NÃO ENCONTRAR NO MW RETORNA STATUS 206
+		}else{
+			$mensagem = new \stdClass();
+			$mensagem->mensagem = "Usuário não encontrado.Verifique a matricula informada";
+			$return = $response->withJson($mensagem)
+			->withStatus(206);
+			#caso não encontre o usuario o retorno será 204
+			//$return->withStatus(204);
+			return $return;
+		}	
 	}
 	
 });
@@ -245,7 +204,10 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 	//se o usuario nao existir no bd, retornara null e entrará no if de erro.
 	$existe = $usuario->id_usuario;
 	if (($existe==NULL)){
-		$return = $response->withStatus(204);
+		$mensagem = new \stdClass();
+		$mensagem->mensagem = "Usuário não encontrado.Verifique a matricula informada";
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
 		return $return;
 	}
 	//fecha o cursor do pdo
@@ -294,7 +256,8 @@ $app->put('/creditos/atualizasaldo', function (Request $request, Response $respo
 	));
 	$resposta = curl_exec($curl);
 	$err = curl_error($curl);
-
+	curl_close($curl);
+	
 	#trata a resposta recebida do pagseguro
 	$resposta = simplexml_load_string($resposta);
 	$status = $resposta->status;
@@ -381,7 +344,6 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	$return = $response->withJson($vetor_registros)->withHeader('Content-type', 'application/json');
 	return $return;
 	
-		#se o usuario não for localizado no sistema PAPAFILAS, retorna erro 204
 	}else{
 		$mensagem = new \stdClass();
 		$mensagem->mensagem = "Usuário não encontrado. Verifique a matricula informada";
@@ -410,6 +372,7 @@ $app->post('/creditos/notificacaops', function (Request $request, Response $resp
 	));
 	$resposta = curl_exec($curl);
 	$err = curl_error($curl);
+	curl_close($curl);
 
 	#trata a resposta recebida do pagseguro
 	$resposta = simplexml_load_string($resposta);
