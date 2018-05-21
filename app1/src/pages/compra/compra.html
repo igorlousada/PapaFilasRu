@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-navbar color="green">
+    <ion-title>
+      <span ion-text>Extrato</span>
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+	<div>
+	<form class="list-form">
+    	<ion-item>
+       	<ion-label floating>
+       	<ion-icon name="cash" item-start class="text-dark"></ion-icon>
+          	Valor
+       	</ion-label>
+       	<ion-input type="text"></ion-input>
+      	</ion-item>
+	</form>
+	</div>
+
+
+	<div class="spacer" style="height: 30px;"></div>
+
+	<div>
+    <button ion-button icon-start block color="green" tappable (click)="doextrato()">
+        <ion-icon name="list-box"></ion-icon>
+        Extrato
+    </button>
+    <button ion-button icon-start block color="green" tappable (click)="dohome()">
+        <ion-icon name="home"></ion-icon>
+        Home
+    </button>
+   </div>
+
+
+</ion-content>
