@@ -1,0 +1,41 @@
+
+<ion-header>
+  <ion-navbar color="green">
+    <ion-title>
+      <span ion-text>Home</span>
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content >
+	<ion-card>
+  	<img src="assets/img/Ru.jpg"/>
+  	<ion-card-content>
+    <ion-card-title>
+      Bem-vindo, {{myName}}
+    </ion-card-title>
+    <p>
+      Nosso objetivo é fornecer refeição de baixo custo, balanceada e saudável à comunidade da Universidade de Brasília, visando apoiar o desenvolvimento de atividades de ensino, pesquisa e extensão, minimizando a evasão e favorecendo a diplomação.
+    </p>
+	</ion-card-content>
+	</ion-card>
+
+	<ion-card>
+		<ion-card-header>
+			Saldo
+		</ion-card-header>
+		<ion-card-content>
+			Seu saldo atual é de {{mySaldo}} reais
+		</ion-card-content>	
+  	</ion-card>
+  	<div>
+  	<button ion-button icon-start block color="green" tappable (click)="docompra()">
+        <ion-icon name="card"></ion-icon>
+        Comprar
+    </button>
+    <button ion-button icon-start block color="green" tappable (click)="doextrato()">
+        <ion-icon name="list-box"></ion-icon>
+        Extrato
+    </button>
+ 	 </div>
+</ion-content>
