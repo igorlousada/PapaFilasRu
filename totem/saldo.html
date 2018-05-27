@@ -14,6 +14,9 @@
 <link rel="stylesheet" href="css/materialize.min.css" />
 <link rel="stylesheet" href="css/custom.css" />
 <link rel="stylesheet" href="css/style.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/virtual-key.js"></script>
+<link rel="stylesheet" type="text/css" href="css/virtual-key.css">
 
 
 </head>
@@ -24,7 +27,7 @@
 <div class="container">
 
   <div class="fixed-action-btn">
-    <a  href="pagina-inicial.html"  class="btn-floating btn-large blue">
+    <a  href="pagina-inicial.html"  class="btn-floating btn-large blue darken-4">
       <iclass="large material-icons" class="material-icons"><i class="material-icons">keyboard_backspace</i>
     </a>
     <ul>
@@ -42,64 +45,70 @@
   <div class="container">
   <br/>
   <br/>
-<h1 class="header blue-text">Saldo</h1>
+<h1 class="header blue-text text-darken-4">Saldo</h1>
   </div>
 
 
 </div>
 
 
-<!-- Input text-->
- <div class="container">
+<!-- -->
+<div class="container">
   <div class="section">
     <br />
     <br />
-<!-- joijojij -->
 <!-- Titulo + imput text matricula-->
-    <h5 class="header blue-text">Insira sua matrícula</h1>
-      <p class="blue-text">
-        Para ter acesso à página de compras, digite sua matrícula abaixo:
-      </p>
+    <h3 class="header blue-text text-darken-4">Insira sua matrícula</h3>
     <br />
     <br />
 
-   <div class="row center">
+
+<div class="row center">
 <div class="col s12 10">
   <div class="card-panel">
-    <div class="row">
-	  <form action="/PapaFilasRU/totem/verifica_saldo.php" method="POST">
-      <section class="input-filts col s12">
-         <input type="Number" name="matricula" placeholder="Matrícula" class="center" style="font-size: 2rem;">
-         <label for="NumberLote"></label>
-      </section>
- 
-   
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(1)"><p>1</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(2)"><p>2</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(3)"><p>3</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(4)"><p>4</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(5)"><p>5</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(6)"><p>6</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(7)"><p>7</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(8)"><p>8</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(9)"><p>9</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard('none')"><p></p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard(0)"><p>0</p></div>
-        <div class="col s4 light-blue numbersDashboard center " onclick="setNumbersSelectDashboard('Clear')"><p>Clear</p></div>
-      
+        <div class="row">
+          <form action="/PapaFilasRU/totem/verifica_saldo.php" method="POST">
+               <input type="Number" name="NumberLote" placeholder="Matrícula" id="campo" class="teclado_text" style="font-size: 40px;">
+
+	<table class="table_teclado">
+		<tr style="width:70%; height: 150px; background-color: white">
+			<td>1</td>
+			<td>2</td>
+			<td>3</td>
+			<td>4</td>
+		</tr>
+		<tr style="width:70%; height: 150px">
+			<td>5</td>
+			<td>6</td>
+			<td>7</td>
+			<td>8</td>
+
+		</tr>
+		<tr style="width:70%; height: 150px">
+			<td>9</td>
+			<td>0</td>
+			<td>.</td>
+			<td><img class="btn_delete" style="width:40%; height: 130px" src="Imagens\voltar.png"></td>
+		</tr>
+	</table>
+   </div>
+  </div>
+</div>
+
+<!-- Botão submit -->
+
+  <div class="row">
+    <div class="col s12 m12 l12">
     </div>
-  </div>
-</div>
-  
+      <a href="verifica_saldo.php">
+      <button type="submit" class="btn waves-effect blue darken-4" style="width:98%; height: 150px; font-size:40px" name="button">Enviar</button>
+      </a>
+      </div>
+    </form>
+    </div>
+<!--Botão submit -->
 
-  </div>
-      <a href="créditos.html">  <button class="btn waves-effect waves-light blue" type="submit" name="action" style="width: 150px; height: 100px">Enviar
-    <i class="material-icons right">send</i>
-  </button></a>
-  </form>      
-</div>
-
-
+<!-- Javascript e Jquery-->
 
 
 <script src="js/index.js"></script>
@@ -110,6 +119,8 @@
     $(document).ready(function() {
        $('input#input_text, textarea#textarea2').characterCounter();
      });
+
+
     </script>
     </script>
 </body>

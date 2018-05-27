@@ -4,7 +4,7 @@ session_start();
 if (isset($_SESSION['ERROR'])){
   $codigo = $_SESSION['ERROR'];
   switch($codigo){
-    case 1: 
+    case 1:
       $mensagem = "Não foi possível proceder com a compra. A matrícula informada não foi encontrada.";
       break;
     case 2:
@@ -19,14 +19,20 @@ if (isset($_SESSION['ERROR'])){
     case 5:
       $mensagem = "Não foi possível realizar a consulta de saldo. A matrícula informada não foi encontrada.";
       break;
-    default: 
+    case 6:
       $mensagem = "Não foi possível proceder com a compra. Um erro inesperado aconteceu. <br> Tente Novamente.";
+      break;
+    default:
+      $mensagem = $codigo;
       break;
   }
 }
 else{
       $mensagem = "Não foi possível proceder com a compra. Um erro inesperado aconteceu. <br> Tente Novamente.";
 }
+
+$_SESSION = array();
+session_destroy();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -55,12 +61,12 @@ else{
   <br/>
   <br/>
 <h1 class="header red-text">OPS! Algo deu errado na sua compra</h1>
-<br />
-<h4 class="header blue-text"><?php echo $mensagem; ?></h4>
+
+<h4 class="header blue-text text-darken-4"><?php echo $mensagem; ?></h4>
 <br />
 <br />
 <i class="material-icons large left">sentiment_very_dissatisfied
-</i><h5 class=" header blue-text"> Para o caso de combranças indevidas mande um email para xxxxxx@gmail.com</h5>
+</i><h5 class=" header blue-text text-darken-4"> Para o caso de combranças indevidas mande um email para xxxxxx@gmail.com</h5>
 <br />
 <br />
 <br />
@@ -72,23 +78,33 @@ else{
 </div>
 
 <div class="container">
-   <div class="row center">
-<div class="col s12 10">
     <div class="row">
+
+      <div class="col s12 m12">
+        <div class="card-panel blue darken-4 z-depth-2">
+      <a href="pagina-inicial.html">
+          <span class="white-text">
+      <h2 class="white-text" style="text-align: center"> Retornar</h2>
+          </span>
+      <a/>
+        </div>
+      </div>
+
+
+
+
+
     </div>
   </div>
 
-      <a href="pagina-inicial.html">  <button class="btn waves-effect waves-light blue" type="submit" name="action" style="width: 150px; height: 100px">Voltar
-    <i class="material-icons right">send</i>
-  </button></a>
-        
+
 </div>
+</div>
+
+<meta http-equiv="refresh" content="30; url=pagina-inicial.html">
 
 
 </script>
 </body>
-
-<meta http-equiv="refresh" content="30; url=pagina-inicial.html" />
-
 
 </html>

@@ -77,7 +77,7 @@ if (isset($_SESSION['Forbidden'])){
       <div class="card-panel">
           <div class="row">
               <form action="credito.php" method="POST">
-                  <input style="font-size: 40px" type="text" step="0.50" readonly id="campo" placeholder="Créditos Desejados (R$)" class="teclado_text" name="NumberLote">
+                  <input style="font-size: 40px" type="Number" step="0.50" readonly id="campo" placeholder="Matrícula" class="teclado_text" name="NumberLote">
 </section>
 
 <table class="table_teclado">

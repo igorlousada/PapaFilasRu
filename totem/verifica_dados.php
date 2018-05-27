@@ -7,6 +7,52 @@ $user = $_SESSION['usuario'];
 $creditos = number_format($_SESSION['creditos'], 2);
 $matricula = $user['MATRICULA'];
 $nome = $user['NOME_USUARIO'];
+$user['SALDO'] = $creditos;
+
+$id_transaction = registerTransaction($user);
+$url = getToken($id_transaction);
+
+function registerTransaction($user){
+
+$json_info = json_encode($user);
+$context = stream_context_create(array(
+    'http' => array(
+        'method' => 'POST',
+        'header' => "Content-Type: application/json \r\n",
+        'content' => $json_info
+    )
+));
+$insertHistory = file_get_contents("http://35.199.101.182/api/creditos/insereHistorico", false, $context);
+if (count(json_decode($insertHistory, true)) == 0){
+  $_SESSION['ERROR']=API_TO_PAYMENT_CONNECTION_FAILED;
+   echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+}
+return $insertHistory; 
+}
+
+function getToken($TransactionLog){
+
+$insertRequest =  stream_context_create(array(
+        'http' => array(
+        'method' => 'POST',
+        'header' => "Content-Type: application/json \r\n",
+        'content' => $TransactionLog
+    )
+));
+
+$request = file_get_contents("http://35.199.101.182/api/creditos/", false, $insertRequest);
+$request = json_decode($request, true);
+
+if (substr($http_response_header[0], 9, 3)!=200){
+  $_SESSION['ERROR']=API_TO_PAYMENT_CONNECTION_FAILED;
+   echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+    }
+
+$url = $request['URL_TOKEN'];
+
+return $url;
+}
+
 ?>
 
 
@@ -75,29 +121,6 @@ $nome = $user['NOME_USUARIO'];
       </p>
     <br />
     <br />
-	
-	<?php 
-
-$user['SALDO'] = $creditos;
-
-$json_info = json_encode($user);
-$context = stream_context_create(array(
-    'http' => array(
-        'method' => 'POST',
-        'header' => "Content-Type: application/json \r\n",
-        'content' => $json_info
-    )
-));
-	
-$request = file_get_contents("http://35.199.101.182/api/creditos/", false, $context);
-
-if ($request == false){
-	$_SESSION['ERROR']=API_TO_PAYMENT_CONNECTION_FAILED;
-}
-
-$resposta = json_decode($request, true);
-$url = $resposta['URL_TOKEN'];
-?>
 
       <a href="<?php echo $url; ?>">  <button class="btn waves-effect waves-light blue" type="submit" name="action" style="width: 150px; height: 100px">Enviar
     <i class="material-icons right">send</i>
