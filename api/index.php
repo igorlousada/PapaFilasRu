@@ -7,6 +7,8 @@ $app = new \Slim\App;
 #arquivo com funcao db_connect() que retorna uma conexao dbo com o BD
 require 'conectadb.php';
 
+require '../cep/vendor/autoload.php';
+use JansenFelipe\CepGratis\CepGratis;
 
 
 #metodo de teste 1
@@ -354,7 +356,7 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	
 });
 
-$app->post('/creditos/notificacaops', function (Request $request, Response $response) {
+/* $app->post('/creditos/notificacaops', function (Request $request, Response $response) {
 	parse_str($request->getBody());
 
 		#busca informações da transação no pagseguro
@@ -427,7 +429,147 @@ $app->post('/creditos/notificacaops', function (Request $request, Response $resp
 	}
 	
 });
+ */
+ 
+ #método para gerar codigo de inicio de sessão Pagseguro Transparente
+$app->post('/creditos/iniciaSessao', function (Request $request, Response $response, array $args) {
+	
+		$data['token'] ='93D0433C38974DD2B3001F53B30CEA45'; //token teste SANDBOX
 
+				//$_SERVER['REMOTE_ADDR']
+		$emailPagseguro = "moises.dandico23@gmail.com";
+
+		$data = http_build_query($data);
+		$url = 'https://ws.sandbox.pagseguro.uol.com.br/v2/sessions';
+
+		$curl = curl_init();
+
+		$headers = array('Content-Type: application/x-www-form-urlencoded; charset=ISO-8859-1'
+			);
+
+		curl_setopt($curl, CURLOPT_URL, $url . "?email=" . $emailPagseguro);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt( $curl,CURLOPT_HTTPHEADER, $headers );
+		curl_setopt( $curl,CURLOPT_RETURNTRANSFER, true );
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+		//curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		$xml = curl_exec($curl);
+
+		curl_close($curl);
+
+		$xml= simplexml_load_string($xml);
+		$idSessao = $xml -> id;
+		echo $idSessao;
+		exit;
+		//return $codigoRedirecionamento;
+
+});
+
+$app->post('/creditos/buscacep', function (Request $request, Response $response, array $args) {
+	parse_str($request->getBody());
+
+    $dados = CepGratis::search($CEP);
+	$return = $response->withJson($dados)->withHeader('Content-type', 'application/json');
+    return $return;
+
+});  
+
+$app->post('/creditos/pagamento', function (Request $request, Response $response) {
+	$dados = json_decode($request->getBody());
+ 	
+	$data['token'] ='93D0433C38974DD2B3001F53B30CEA45'; //token sandbox ou produção
+	$data['receiverEmail'] = 'moises.dandico23@gmail.com'; //email do vendedor
+	$data['paymentMode'] = 'default';
+	
+	$data['senderHash'] = $dados->HASH_USUARIO; //hash do usuario
+	$data['creditCardToken'] = $dados->HASH_CARTAO; //hash do cartao
+	$data['paymentMethod'] = 'creditCard';
+
+	$data['senderName'] = $dados->NOME_USUARIO; // ALTERARnome do usuário deve conter nome e sobrenome
+	$data['senderAreaCode'] = $dados->CODIGO_AREA; //ddd do comprador
+	$data['senderPhone'] = $dados->TELEFONE;		//telefone do comprador
+	$data['senderEmail'] = $dados->EMAIL;		//ALTERARemail do comprador
+	$data['senderCPF'] = $dados->CPF;			//ALTERAR
+	
+	$data['installmentQuantity'] = '1'; //Quantidade de parcelas
+	$data['installmentValue'] = $dados->SALDO; //ALTERAR
+	$data['creditCardHolderName'] = $dados->NOME_TITULAR; //nome do titular do cartao
+	$data['creditCardHolderCPF'] = $dados->CPF_TITULAR;	//cpf titular do cartao
+	$data['creditCardHolderAreaCode'] = $dados->CODIGO_AREA;	//ddd titular do cartao
+	$data['creditCardHolderPhone'] = $dados->TELEFONE;		//telefone titular do cartao
+	$data['billingAddressStreet'] = $dados->ENDERECO;			//endereco titular do cartao
+	$data['billingAddressNumber'] = $dados->NUMERO_CASA;			// numero end titular do cartao
+	$data['billingAddressDistrict'] = $dados->BAIRRO;
+	$data['billingAddressPostalCode'] = $dados->CEP;
+	$data['billingAddressCity'] = $dados->CIDADE;
+	$data['billingAddressState'] = $dados->UF;
+	$data['billingAddressCountry'] = 'Brasil';
+
+	$data['currency'] = 'BRL';
+	$data['itemId1'] = '01';
+	$data['itemQuantity1'] = '1';
+	$data['itemDescription1'] = 'Creditos RU';
+	$data['reference'] = $dados->ID_HISTORICO; //ALTERAR
+	$data['shippingAddressRequired'] = 'false';
+	$data['itemAmount1'] = $dados->SALDO; //ALTERAR valor total da compra
+
+			//$_SERVER['REMOTE_ADDR']
+	$emailPagseguro = "moises.dandico23@gmail.com";
+
+	$data = http_build_query($data);
+	$url = 'https://ws.sandbox.pagseguro.uol.com.br/v2/transactions'; //URL de teste
+
+
+	$curl = curl_init();
+
+	$headers = array('Content-Type: application/x-www-form-urlencoded; charset=ISO-8859-1'
+		);
+
+	curl_setopt($curl, CURLOPT_URL, $url . "?email=" . $emailPagseguro);
+	curl_setopt($curl, CURLOPT_POST, true);
+	curl_setopt( $curl,CURLOPT_HTTPHEADER, $headers );
+	curl_setopt( $curl,CURLOPT_RETURNTRANSFER, true );
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+	//curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	$xml = curl_exec($curl);
+
+	curl_close($curl);
+
+	$xml= simplexml_load_string($xml);
+	$status = $xml->status;
+	$ID_HISTORICO= $xml->reference;
+
+
+	if($status == '1' || $status == '2'){
+		$dados->STATUS_COMPRA='1';
+		$return = json_encode($dados);	
+		return $return;
+	}
+	if($status == '3' || $status == '4'){
+		$dados->STATUS_COMPRA='2';
+		$return = json_encode($dados);	
+		return $return;
+	}
+
+	if($status == '7'){
+		$dados->STATUS_COMPRA='3';
+		$return = json_encode($dados);	
+		return $return;
+	}
+
+}); 
+
+$app->post('/creditos/teste', function (Request $request, Response $response, array $args) {
+	parse_str($request->getBody());
+	
+    echo $hashPagSeguro;
+	echo $endereco;
+
+}); 
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
