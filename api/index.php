@@ -569,7 +569,80 @@ $app->post('/creditos/teste', function (Request $request, Response $response, ar
     echo $hashPagSeguro;
 	echo $endereco;
 
-}); 
+});
+
+
+#metodo retorna cardapio do dia
+$app->get('/cardapio/{anomesdia}', function (Request $request, Response $response,array $args) {
+  $anomesdia = $args['anomesdia'];
+  $pdo = db_connect();
+ 
+  $sql1=" SELECT * FROM `cardapio_desjejum`   WHERE data_refeicao = '$anomesdia'";
+  $sql2=" SELECT * FROM `cardapio_almoco`   WHERE data_refeicao = '$anomesdia'";
+  $sql3=" SELECT * FROM `cardapio_jantar`   WHERE data_refeicao = '$anomesdia'";
+
+  //statment 1: desjejum
+  $stmt1=$pdo->prepare($sql1);
+  $stmt1->execute();
+  $stmt2=$pdo->prepare($sql2);
+  $stmt2->execute();
+  $stmt3=$pdo->prepare($sql3);
+  $stmt3->execute();
+
+
+  if(($stmt1->rowCount()>0)AND($stmt2->rowCount()>0)AND($stmt3->rowCount()>0)){
+    $desjejum   = $stmt1->fetch(PDO::FETCH_ASSOC);
+    $almoco   = $stmt2->fetch(PDO::FETCH_ASSOC);
+    $jantar   = $stmt3->fetch(PDO::FETCH_ASSOC);
+    
+    $cardapio = array (
+       "ID_REFEICAO_1" 		=> 			   $desjejum["id_refeicao"],
+       "DATA_REFEICAO_1" 	=> 			   $desjejum["data_refeicao"],
+       "BEBIDAS_Q_1" 		=> utf8_encode($desjejum["bebidas_q"]),
+       "BEBIDAS_Q_VEG_1" 	=> utf8_encode($desjejum["bebidas_q_veg"]),
+       "ACHOCOLATADO_1"		=> utf8_encode($desjejum["achocolatado"]),
+       "PAO_1" 				=> utf8_encode($desjejum["pao"]),
+       "COMPLEMENTO_1" 		=> utf8_encode($desjejum["complemento"]),
+       "PROTEINA_1"			=> utf8_encode($desjejum["proteina"]),
+       "PROTEINA_VEG_1" 	=> utf8_encode($desjejum["proteina_veg"]),
+       "FRUTA_1" 			=> utf8_encode($desjejum["fruta"]),
+
+       "ID_REFEICAO_2" 		=> 			   $almoco["id_refeicao"],
+       "DATA_REFEICAO_2" 	=> 			   $almoco["data_refeicao"],
+       "SALADA_2" 			=> utf8_encode($almoco["salada"]),
+       "MOLHO_2" 			=> utf8_encode($almoco["molho"]),
+       "PRATO_PRINCIPAL_2" 	=> utf8_encode($almoco["prato_principal"]),
+       "GUARNICAO_2"		=> utf8_encode($almoco["guarnicao"]),
+       "PRATO_VEG_2"		=> utf8_encode($almoco["prato_veg"]),
+       "ACOMPANHAMENTOS_2"	=> utf8_encode($almoco["acompanhamentos"]),
+       "SOBREMESA_2" 		=> utf8_encode($almoco["sobremesa"]),
+       "REFRESCO_2" 		=> utf8_encode($almoco["refresco"]),
+
+       "ID_REFEICAO_3" 		=> 			   $jantar["id_refeicao"],
+       "DATA_REFEICAO_3" 	=> 			   $jantar["data_refeicao"],
+       "SALADA_3" 			=> utf8_encode($jantar["salada"]),
+       "MOLHO_3" 			=> utf8_encode($jantar["molho"]),
+       "SOPA_3" 			=> utf8_encode($jantar["sopa"]),
+       "PAO_3" 				=> utf8_encode($jantar["pao"]),
+       "PRATO_PRINCIPAL_3" 	=> utf8_encode($jantar["prato_principal"]),
+       "PRATO_VEG_3"		=> utf8_encode($jantar["prato_veg"]),
+       "COMPLEMENTOS_3" 	=> utf8_encode($jantar["complementos"]),
+       "SOBREMESA_3" 		=> utf8_encode($jantar["sobremesa"]),
+       "REFRESCO_3" 		=> utf8_encode($jantar["refresco"]),
+       );
+     
+    $resultado = $response->withJson($cardapio)->withHeader('Content-type', 'application/json');
+	return $resultado;
+  
+  }else{ 
+    $mensagem = new \stdClass();
+    $mensagem->mensagem = "Cardápio não encontrado";
+    $return = $response->withJson($mensagem)
+    ->withStatus(206);
+    return $return;
+    }
+});
+
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
