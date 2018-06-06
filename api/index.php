@@ -644,5 +644,62 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
 });
 
 
+#metodo retorna preço da refeicao
+$app->get('/preco/{matricula}', function (Request $request, Response $response,array $args) {
+  $matricula = $args['matricula'];
+  $pdo = db_connect();
+ 
+  $sql= "SELECT id_grupo FROM `usuario` WHERE matricula_usuario = '$matricula'";
+
+  $stmt=$pdo->prepare($sql);
+  $stmt->execute();
+  
+  if($stmt->rowCount()>0){
+    $id_grupo   = $stmt->fetch(PDO::FETCH_ASSOC);
+    $id_grupo = $id_grupo['id_grupo'];
+    if ($id_grupo == 1){
+    	$preco_cafe 	= 0;
+    	$preco_almoco 	= 0;
+    	$preco_jantar 	= 0; 
+    }
+    elseif ($id_grupo == 2){
+    	$preco_cafe 	= 1;
+    	$preco_almoco	= 1;
+    	$preco_jantar 	= 1;
+    }
+    elseif ($id_grupo == 3){
+		$preco_cafe 	= 2.50;
+    	$preco_almoco 	= 2.50;
+    	$preco_jantar 	= 2.50;    	
+    }
+    elseif ($id_grupo == 4){
+    	$preco_cafe 	= 7;
+    	$preco_almoco 	= 13;
+    	$preco_jantar 	= 13;
+    }
+
+
+    //grupo 1 nao paga
+    //grupo 2 paga 1 real em todas as refeicoes
+    //grupo 3 paga 2,50 em todas as refeicoes
+    //grupo 4 paga 7 no cafe, 13 no almoco e jantar
+    
+    $preco = array ("preco_desjejum" => $preco_cafe,
+    				"preco_almoco" => $preco_almoco,
+    				"preco_jantar" => $preco_jantar);
+     
+    $resultado = $response->withJson($preco)->withHeader('Content-type', 'application/json');
+	return $resultado;
+  
+  }else{ 
+    $mensagem = new \stdClass();
+    $mensagem->mensagem = "Precos nao encontrados";
+    $return = $response->withJson($mensagem)
+    ->withStatus(206);
+    return $return;
+    }
+});
+
+
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
