@@ -1,0 +1,13 @@
+.colorDashboar {
+  height: 90px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.numbersDashboard {
+  height: 90px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 2em;
+  cursor: pointer;
+}

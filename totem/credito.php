@@ -118,17 +118,19 @@ if (isset($_SESSION['Forbidden'])){
 
 </div>
 <?php
- if (isset($_POST['NumberLote'])){
+ if (!empty($_POST['NumberLote'])){
 	 if ($_POST['NumberLote']<=$limite){
 		 $_SESSION['creditos']=$_POST['NumberLote'];
      if(isset($_SESSION['Forbidden'])){
 		unset($_SESSION['Forbidden']);
      }
-		 echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/verifica_dados.php\">";
+		 echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/verifica_dados.php\">";
+     exit();
 	 }
 	else{
     $_SESSION['Forbidden']=true;
-	  echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/credito.php\">";
+	  echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/credito.php\">";
+    exit();
 	}
 }
 ?>

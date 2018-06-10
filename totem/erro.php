@@ -22,6 +22,15 @@ if (isset($_SESSION['ERROR'])){
     case 6:
       $mensagem = "Não foi possível proceder com a compra. Um erro inesperado aconteceu. <br> Tente Novamente.";
       break;
+    case 7:
+      $mensagem = "O sistema está processando seu pagamento. Assim que seu pagamento for aprovado, sua conta será creditada.";
+      break;
+    case 8:
+      $mensagem = "Seu pagamento não foi aprovado. Entre em contato com seu banco.";
+      break;
+    case 9:
+      $mensagem = "Erro! CEP, CPF ou Telefone Inválido!";
+      break;
     default:
       $mensagem = $codigo;
       break;
