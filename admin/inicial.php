@@ -77,7 +77,7 @@ if(!(array_key_exists('Logged', $_SESSION) and $_SESSION['Logged']==true)){
             <li class="bold"><a href="inicial.php" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
             </li>
 
-            <li class="bold"><a href="propaganda.html" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
+            <li class="bold"><a href="propaganda.php" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
             </li>
 
             <li class="bold"><a href="listas.html" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
