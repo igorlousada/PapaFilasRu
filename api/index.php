@@ -667,5 +667,25 @@ $app->post('/cardapio/inserirjantar/', function (Request $request, Response $res
 });
 
 
+$app->get('/filas/status', function (Request $request, Response $response,array $args) {
+	
+	$dados = array( 'ocupacao_1' 		=> '100',
+					'tempo_de_fila_1'	=> '45',
+					'ocupacao_2'		=> '56',
+					'tempo_de_fila_2'	=> '12',
+					'ocupacao_3'		=> '155',
+					'tempo_de_fila_3'	=> '22',
+					'ocupacao_4'		=> '10',
+					'tempo_de_fila_4'	=> '120',
+					'ocupacao_5'		=> '40',
+					'tempo_de_fila_5'	=> '80',
+					'ocupacao_6'		=> '80',
+					'tempo_de_fila_6'	=> '55');
+
+
+	$return = $response->withJson($dados);
+	return $return;
+});
+
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
