@@ -7,8 +7,8 @@ $app = new \Slim\App;
 #arquivo com funcao db_connect() que retorna uma conexao dbo com o BD
 require 'conectadb.php';
 
-require '../cep/vendor/autoload.php';
-use JansenFelipe\CepGratis\CepGratis;
+//require '../cep/vendor/autoload.php';
+//use JansenFelipe\CepGratis\CepGratis;
 
 
 #metodo de teste 1
@@ -356,80 +356,6 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	
 });
 
-/* $app->post('/creditos/notificacaops', function (Request $request, Response $response) {
-	parse_str($request->getBody());
-
-		#busca informações da transação no pagseguro
-	$curl = curl_init();
-
-	curl_setopt_array($curl, array(
-		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/'.$notificationCode.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',  // alterado para versão 2 as 5h47
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_ENCODING => "",
-		CURLOPT_MAXREDIRS => 10,
-		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		CURLOPT_CUSTOMREQUEST => "GET",
-		CURLOPT_POSTFIELDS => "",
-		CURLOPT_HTTPHEADER => array("content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"),
-	));
-	$resposta = curl_exec($curl);
-	$err = curl_error($curl);
-	curl_close($curl);
-
-	#trata a resposta recebida do pagseguro
-	$resposta = simplexml_load_string($resposta);
-	$status = $resposta->status;
-	$ID_HISTORICO= $resposta->reference;
-
-	#busca as informações da transação no banco de dados do papafilas
-	$pdo = db_connect();
-	$sql = "SELECT * FROM `historico_compra` WHERE id_historico= :HISTORICO";
-	$stmt=$pdo->prepare($sql);	
-	$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
-	$stmt->execute();
-	$usuario= $stmt->fetch(PDO::FETCH_OBJ);
-	
-	
-	#Se a transação está com status pago e o saldo ainda não foi inserido
-	if(($status == 3 || $status == 4)  && $usuario->saldo_inserido == 0){
-		
-		#libera a conexão pdo para nova utilização
-		$stmt->closecursor();
-		
-		$sql2="UPDATE carteira_usuario SET  saldo=saldo+'$resposta->grossAmount' WHERE id_usuario= :USUARIO;
-			UPDATE historico_compra SET  saldo_inserido=1,codigo_status='$status' WHERE id_historico= :HISTORICO";
-
-		$stmt=$pdo->prepare($sql2);
-		$stmt->bindParam(":USUARIO", $usuario->id_usuario);
-		$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
-		$stmt->execute();
-	}
-	
-	if(($status == 3 || $status == 4) && $usuario->saldo_inserido == 1){
-				$mensagem = new \stdClass();
-				$mensagem->mensagem = "Os créditos dessa compra já foram inseridos em sua conta.";
-				$return = $response->withJson($mensagem)
-				->withStatus(206);
-				echo "$usuario->saldo_inserido";
-				return $return;
-	}
-	if($status == 1 || $status == 2){
-				$mensagem = new \stdClass();
-				$mensagem->mensagem = "Sua compra está sendo processada. Assim que aprovada seus créditos serão inseridos";
-				$return = $response->withJson($mensagem)
-				->withStatus(206);
-				return $return;
-	}
-	if($status == 7){
-				$mensagem = new \stdClass();
-				$mensagem->mensagem = "Desculpe mas seu pagamento não foi aprovado pela operadora. Tente novamente ou verifique os dados inseridos";
-				$return = $response->withJson($mensagem)
-				->withStatus(206);
-				return $return;
-	}
-	
-});
- */
  
  #método para gerar codigo de inicio de sessão Pagseguro Transparente
 $app->post('/creditos/iniciaSessao', function (Request $request, Response $response, array $args) {
@@ -602,9 +528,9 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
        "BEBIDAS_Q_VEG_1" 	=> utf8_encode($desjejum["bebidas_q_veg"]),
        "ACHOCOLATADO_1"		=> utf8_encode($desjejum["achocolatado"]),
        "PAO_1" 				=> utf8_encode($desjejum["pao"]),
-       "PAO_VEG_1" 				=> utf8_encode($desjejum["pao_veg"]),
+       "PAO_VEG_1" 			=> utf8_encode($desjejum["pao_veg"]),
        "COMPLEMENTO_1" 		=> utf8_encode($desjejum["complemento"]),
-       "COMPLEMENTO_VEG_1" 		=> utf8_encode($desjejum["complemento_veg"]),
+       "COMPLEMENTO_VEG_1" 	=> utf8_encode($desjejum["complemento_veg"]),
        "PROTEINA_1"			=> utf8_encode($desjejum["proteina"]),
        "PROTEINA_VEG_1" 	=> utf8_encode($desjejum["proteina_veg"]),
        "FRUTA_1" 			=> utf8_encode($desjejum["fruta"]),
@@ -700,6 +626,44 @@ $app->get('/preco/{matricula}', function (Request $request, Response $response,a
     ->withStatus(206);
     return $return;
     }
+});
+
+#metodo insere cardapio de desjejum
+$app->post('/cardapio/inserirdesjejum/', function (Request $request, Response $response, array $args) {
+    
+    $desjejum = json_decode($request->getBody());
+    
+    $pdo = db_connect();
+	$sql = "INSERT INTO `cardapio_desjejum` (`data_refeicao`, `bebidas_q`, `bebidas_q_veg`, `achocolatado`, `pao`, `pao_veg`, `complemento`, `complemento_veg`, `proteina`, `proteina_veg`, `fruta`) VALUES ('$desjejum->DATA_REFEICAO', '$desjejum->BEBIDAS_Q', '$desjejum->BEBIDAS_Q_VEG', '$desjejum->ACHOCOLATADO', '$desjejum->PAO', '$desjejum->PAO_VEG', '$desjejum->COMPLEMENTO', '$desjejum->COMPLEMENTO_VEG', '$desjejum->PROTEINA', '$desjejum->PROTEINA_VEG', '$desjejum->FRUTA')";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+});
+
+#metodo insere cardapio de almoco
+$app->post('/cardapio/inseriralmoco/', function (Request $request, Response $response, array $args) {
+    
+    $almoco = json_decode($request->getBody());
+    
+    $pdo = db_connect();
+	$sql = "INSERT INTO `cardapio_almoco`(`data_refeicao`, `salada`, `molho`, `prato_principal`, `guarnicao`, `prato_veg`, `acompanhamentos`, `sobremesa`, `refresco`) 
+			VALUES ('$almoco->DATA_REFEICAO', '$almoco->SALADA', '$almoco->MOLHO', '$almoco->PRATO_PRINCIPAL', '$almoco->GUARNICAO', '$almoco->PRATO_VEG', '$almoco->ACOMPANHAMENTOS', '$almoco->SOBREMESA', '$almoco->REFRESCO')";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	
+});
+
+#metodo insere cardapio de janta
+$app->post('/cardapio/inserirjantar/', function (Request $request, Response $response, array $args) {
+    
+    $jantar = json_decode($request->getBody());
+    
+    $pdo = db_connect();
+	$sql = "INSERT INTO `cardapio_jantar`(`data_refeicao`, `salada`, `molho`, `sopa`, `pao`, `prato_principal`, `prato_veg`, `complementos`, `sobremesa`, `refresco`) 
+			VALUES ('$jantar->DATA_REFEICAO', '$jantar->SALADA', '$jantar->MOLHO', '$jantar->SOPA', '$jantar->PAO', '$jantar->PRATO_PRINCIPAL', '$jantar->PRATO_VEG', '$jantar->COMPLEMENTOS', '$jantar->SOBREMESA', '$jantar->REFRESCO')";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	
 });
 
 

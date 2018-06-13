@@ -11,7 +11,7 @@ else{
     if(areCorrect($_POST['username'], $_POST['password'])){
       $_SESSION['username']=$_POST['username'];
       $_SESSION['Logged']=true;
-      echo "<meta http-equiv=\"refresh\" content=\"0; url=/admin/inicial.php\" />";
+      echo "<meta http-equiv=\"refresh\" content=\"0; url=./admin/inicial.php\" />";
       exit();
     }
     else{
