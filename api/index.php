@@ -400,7 +400,16 @@ $app->post('/creditos/buscacep', function (Request $request, Response $response,
 	$return = $response->withJson($dados)->withHeader('Content-type', 'application/json');
     return $return;
 
-});  
+});
+
+$app->post('/creditos/buscacepapp', function (Request $request, Response $response, array $args) {
+	$info=json_decode($request->getBody());
+
+    $dados = CepGratis::search($info->cep);
+	$return = $response->withJson($dados)->withHeader('Content-type', 'application/json');
+    return $return;
+
+});    
 
 $app->post('/creditos/pagamento', function (Request $request, Response $response) {
 	$dados = json_decode($request->getBody());
@@ -488,15 +497,6 @@ $app->post('/creditos/pagamento', function (Request $request, Response $response
 	}
 
 }); 
-
-$app->post('/creditos/teste', function (Request $request, Response $response, array $args) {
-	parse_str($request->getBody());
-	
-    echo $hashPagSeguro;
-	echo $endereco;
-
-});
-
 
 #metodo retorna cardapio do dia
 $app->get('/cardapio/{anomesdia}', function (Request $request, Response $response,array $args) {
@@ -670,18 +670,18 @@ $app->post('/cardapio/inserirjantar/', function (Request $request, Response $res
 $app->get('/filas/status', function (Request $request, Response $response,array $args) {
 	
 	
-	$dados = array( 'ocupacao_1' 		=> rand(0,200),
-					'tempo_de_fila_1'	=> rand(0,200),
-					'ocupacao_2'		=> rand(0,200),
-					'tempo_de_fila_2'	=> rand(0,200),
-					'ocupacao_3'		=> rand(0,200),
-					'tempo_de_fila_3'	=> rand(0,200),
-					'ocupacao_4'		=> rand(0,200),
-					'tempo_de_fila_4'	=> rand(0,200),
-					'ocupacao_5'		=> rand(0,200),
-					'tempo_de_fila_5'	=> rand(0,200),
-					'ocupacao_6'		=> rand(0,200),
-					'tempo_de_fila_6'	=> rand(0,200));
+	$dados = array( 'OCUPACAO_1' 		=> rand(0,200),
+					'TEMPO_FILA_1'	=> rand(0,200),
+					'OCUPACAO_2'		=> rand(0,200),
+					'TEMPO_FILA_2'	=> rand(0,200),
+					'OCUPACAO_3'		=> rand(0,200),
+					'TEMPO_FILA_3'	=> rand(0,200),
+					'OCUPACAO_4'		=> rand(0,200),
+					'TEMPO_FILA_4'	=> rand(0,200),
+					'OCUPACAO_5'		=> rand(0,200),
+					'TEMPO_FILA_5'	=> rand(0,200),
+					'OCUPACAO_6'		=> rand(0,200),
+					'TEMPO_FILA_6'	=> rand(0,200));
 
 
 	$return = $response->withJson($dados);
