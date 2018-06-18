@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -42,28 +41,28 @@
 
   <!-- START HEADER -->
   <header id="header" class="page-topbar">
-        <!-- start header nav-->
-        <div class="navbar-fixed">
-            <nav class="navbar  blue darken-4">
-                <div class="nav-wrapper">
-                    <ul class="left">
-                      <li><h1 class="logo-wrapper"><a href="index.html" class="brand-logo darken-1"><img src="images/materialize-logo.png" alt="materialize logo"></a> <span class="logo-text">TotemRU</span></h1></li>
-                    </ul>
-            </nav>
-        </div>
-        <!-- end header nav-->
-  </header>
-  <!-- END HEADER -->
+    <!-- start header nav-->
+    <div class="navbar-fixed">
+      <nav class="navbar  blue darken-4">
+        <div class="nav-wrapper">
+          <ul class="left">
+            <li><h1 class="logo-wrapper"><a href="index.html" class="brand-logo darken-1"><img src="images/materialize-logo.png" alt="materialize logo"></a> <span class="logo-text">TotemRU</span></h1></li>
+          </ul>
+        </nav>
+      </div>
+      <!-- end header nav-->
+    </header>
+    <!-- END HEADER -->
 
-  <!-- //////////////////////////////////////////////////////////////////////////// -->
+    <!-- //////////////////////////////////////////////////////////////////////////// -->
 
-  <!-- START MAIN -->
-  <div id="main">
-    <!-- START WRAPPER -->
-    <div class="wrapper">
+    <!-- START MAIN -->
+    <div id="main">
+      <!-- START WRAPPER -->
+      <div class="wrapper">
 
       <!-- START LEFT SIDEBAR NAV-->
-      <aside id="left-sidebar-nav">
+   <aside id="left-sidebar-nav">
         <ul id="slide-out" class="side-nav fixed leftside-navigation">
             <li class="user-details cyan darken-2">
             <div class="row">
@@ -83,231 +82,228 @@
             </div>
             </li>
             <!-- Aqui começa a navbar lateral-->
-            <li class="bold"><a href="blank.html" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
+            <li class="bold"><a href="inicial.html" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
             </li>
 
             <li class="bold"><a href="propaganda.html" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
             </li>
-			
-			<li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
-            </li>
-			
 
-            <li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class="mdi-action-face-unlock"></i>Lista de usuarios</a>
+            <li class="bold"><a href="listas.html" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
             </li>
 
-            <li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class="mdi-action-shopping-cart"></i>Lista de Transações</a>
+
+            <li class="bold"><a href="listausuarios.html" class="waves-effect waves-cyan"><i class="mdi-action-face-unlock"></i>Lista de usuarios</a>
             </li>
 
-            <li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class="mdi-action-input"></i>Inserir créditos</a>
+            <li class="bold"><a href="do-usuario.html" class="waves-effect waves-cyan"><i class="mdi-action-info-outline"></i>Usuário</a>
             </li>
-			
-			<li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class="mdi-action-description"></i>Cardápio</a>
+
+            <li class="bold"><a href="abrir.html" class="waves-effect waves-cyan"><i class="mdi-action-lock-outline"></i>Abrir/Fechar restaurante(s)</a>
             </li>
-          </ul>
+
+            <li class="bold"><a href="cardapio.html" class="waves-effect waves-cyan"><i class="mdi-action-description"></i>Cardápio</a>
+            </li>
+            </ul>
             </div>
-              </li>
+
                     <!-- acaba aqui por enquanto-->
             </aside>
       <!-- END LEFT SIDEBAR NAV-->
+    <!-- //////////////////////////////////////////////////////////////////////////// -->
 
-      <!-- //////////////////////////////////////////////////////////////////////////// -->
+    <!-- START CONTENT -->
+    <section id="content">
 
-      <!-- START CONTENT -->
-      <section id="content">
-
-        <!--breadcrumbs start-->
-        <div id="breadcrumbs-wrapper">
-            <!-- Search for small screen -->
-            <div class="header-search-wrapper grey hide-on-large-only">
-                <i class="mdi-action-search active"></i>
-                <input type="text" name="Search" class="header-search-input z-depth-2" placeholder="Explore Materialize">
-            </div>
-          <div class="container">
-            <div class="row">
-              <div class="col s12 m12 l12">
-                <h5 class="breadcrumbs-title">Cardápio</h5>
-                <ol class="breadcrumbs">
-                    <li><a href="index.html">Página Inicial</a></li>
-                    <li class="active">Cardápio</li>
-                </ol>
-              </div>
-            </div>
-          </div>
+      <!--breadcrumbs start-->
+      <div id="breadcrumbs-wrapper">
+        <!-- Search for small screen -->
+        <div class="header-search-wrapper grey hide-on-large-only">
+          <i class="mdi-action-search active"></i>
+          <input type="text" name="Search" class="header-search-input z-depth-2" placeholder="Explore Materialize">
         </div>
-        <!--breadcrumbs end-->
-
-
-        <!--start container-->
         <div class="container">
-          <div class="section">
-
-            <p class="caption">Cardápio</p>
-            <div class="divider"></div>
-            <div>
-              <!-- ESCREVA AQUI SUAS DIVS-->
-              <!-- Modal Trigger -->
-                 <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Inserir Cardápios</a>
-
-              <!-- Modal Structure -->
-               <div id="modal1" class="modal">
-                    <div class="modal-content">
-                        <h4>Insira as informações do seu cardápio</h4>
-						<br><br>
-						<div class="col s6 m3">
-                          
-                        <div class="col s3">
-				         <h5>Data do Cardápio</h5>
-						 
-						 <input  id="data" type="date" class="validate">
-				  
-						<br><br>
-                        <h5>Desejum</h5>
-						 <div class="row">
-                          <form class="col s12">
-                        <div class="row">
-                        <div class="input-field col s6">
-                           <input placeholder="Bebidas Quentes" id="bebidas_q_1" type="text" class="validate">
-                          
-                        </div>
-                       <div class="input-field col s6">
-                         <input placeholder="Bebidas Quentes Vegano" id="bebidas_q_veg_1" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Pão" id="pao_1" type="text" class="validate">
-                 
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Pão Vegano" id="pao_veg_1" type="text" class="validate">
-                 
-                       </div>
-					   
-					   <div class="input-field col s6">
-                         <input placeholder="Achocolatado" id="achocolatado_1" type="text" class="validate">
-                     
-                       </div>
-					   
-					   <div class="input-field col s6">
-                         <input placeholder="Complemento" id="complemento_1" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Complemento Vegano" id="complemento_veg_1" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Proteína" id="proteina_1" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Proteína Vegana" id="proteina_veg_1" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Fruta" id="fruta_1" type="text" class="validate">
-                     
-                       </div>
-					   </div>
-					   <br><br>
-					   <h5>Almoço</h5>
-				
-                        <div class="row">
-                        <div class="input-field col s6">
-                           <input placeholder="Salada" id="salada_2" type="text" class="validate">
-                          
-                        </div>
-                       <div class="input-field col s6">
-                         <input placeholder="Molho" id="molho_2" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Prato Principal" id="prato_principal_2" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Guarnição" id="guarnicao_2" type="text" class="validate">
-                 
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Prato Vegano" id="prato_veg_2" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Acompanhamentos" id="acompanhamentos_2" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Sobremesa" id="sobremesa_2" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Refresco" id="refresco_2" type="text" class="validate">
-                     
-                       </div>
-					   </div>
-					   <br><br>
-					   <h5>Jantar</h5>
-				
-                        <div class="row">
-                        <div class="input-field col s6">
-                           <input placeholder="Salada" id="salada_3" type="text" class="validate">
-                          
-                        </div>
-                       <div class="input-field col s6">
-                         <input placeholder="Molho" id="molho_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Sopa" id="sopa_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Pão" id="pao_3" type="text" class="validate">
-                 
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Prato Principal" id="prato_principal_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Guarnição" id="guarnicao_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Prato Vegano" id="prato_veg_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Complementos" id="complementos_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Sobremesa" id="sobremesa_3" type="text" class="validate">
-                     
-                       </div>
-					   <div class="input-field col s6">
-                         <input placeholder="Refresco" id="refresco_3" type="text" class="validate">
-                     
-                       </div>
-					   </div>
-						
-		    </div>
-			<br><br>
-                  <div class="modal-footer">
-                   <button style="background-color:DodgerBlue;color:white; width: 150px; height: 100%; border: 2px solid #eee;">Enviar</button>
-                  </div>
-             </div>
-          
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <h5 class="breadcrumbs-title">Cardápio</h5>
+              <ol class="breadcrumbs">
+                <li><a href="index.html">Página Inicial</a></li>
+                <li class="active">Cardápio</li>
+              </ol>
             </div>
-            
           </div>
         </div>
-        <!--end container-->
-      </section>
-      <!-- END CONTENT -->
+      </div>
+      <!--breadcrumbs end-->
+
+
+      <!--start container-->
+      <div class="container">
+        <div class="section">
+
+          <p class="caption">Cardápio</p>
+                    <?php 
+                      //RETORNO DE PARAMETROS DE SUCESSO OU ERRO
+                      $sucesso_registro   = isset($_GET['sucesso_insert'])  ? $_GET['sucesso_insert'] : 0;
+                      if($sucesso_registro){
+                        echo "Cardápio inserido com sucesso";
+                      }
+                    ?>
+          <div class="divider"></div>
+          <div>
+            <!-- ESCREVA AQUI SUAS DIVS-->
+            <!-- Modal Trigger -->
+            <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Inserir Cardápios</a>
+
+            <!-- Modal Structure -->
+            <div id="modal1" class="modal">
+              <div class="modal-content">
+                <h4>Insira as informações do seu cardápio</h4>
+                <div class="col s6 m3">
+                  <form action="./controls/InserirCardapio.php" method="POST">
+                    <div class="col s3">
+                     <h5>Data do Cardápio</h5>
+                     <input  name="data" type="date" class="validate">
+                     <br><br>
+                     <h5>Desejum</h5>
+                     <div class="row">
+                      <form class="col s12">
+                          <div class="row">
+                            <div class="input-field col s6">
+                             <input placeholder="Bebidas Quentes" name="bebidas_q_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Bebidas Quentes Vegano" name="bebidas_q_veg_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Pão" name="pao_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Pão Vegano" name="pao_veg_1" type="text" class="validate">
+
+                           </div>
+
+                           <div class="input-field col s6">
+                             <input placeholder="Achocolatado" name="achocolatado_1" type="text" class="validate">
+
+                           </div>
+
+                           <div class="input-field col s6">
+                             <input placeholder="Complemento" name="complemento_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Complemento Vegano" name="complemento_veg_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Proteína" name="proteina_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Proteína Vegana" name="proteina_veg_1" type="text" class="validate">
+
+                           </div>
+                           <div class="input-field col s6">
+                             <input placeholder="Fruta" name="fruta_1" type="text" class="validate">
+
+                           </div>
+                         </div>
+                         <h5>Almoço</h5>
+                         <div class="row">
+                          <div class="input-field col s6">
+                           <input placeholder="Salada" name="salada_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Molho" name="molho_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Prato Principal" name="prato_principal_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Guarnição" name="guarnicao_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Prato Vegano" name="prato_veg_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Acompanhamentos" name="acompanhamentos_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Sobremesa" name="sobremesa_2" type="text" class="validate">
+
+                         </div>
+                         <div class="input-field col s6">
+                           <input placeholder="Refresco" name="refresco_2" type="text" class="validate">
+
+                         </div>
+                       </div>
+                       
+                       <h5>Jantar</h5>
+
+                       <div class="row">
+                        <div class="input-field col s6">
+                         <input placeholder="Salada" name="salada_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Molho" name="molho_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Sopa" name="sopa_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Pão" name="pao_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Prato Principal" name="prato_principal_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Guarnição" name="guarnicao_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Prato Vegano" name="prato_veg_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Complementos" name="complementos_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Sobremesa" name="sobremesa_3" type="text" class="validate">
+
+                       </div>
+                       <div class="input-field col s6">
+                         <input placeholder="Refresco" name="refresco_3" type="text" class="validate">
+
+                       </div>
+                     </div>
+                     <div class="modal-footer">
+                      <button type="submit" style="background-color:DodgerBlue;color:white; width: 150px; height: 100%; border: 2px solid #eee;">Enviar</button>
+                    </div>
+                  </form>
+              </div>
+
+            </div>
+          </div>
+          <!--end container-->
+        </section>
+        <!-- END CONTENT -->
+      </div>
     </div>
-  </div>
 
 
 
@@ -324,17 +320,17 @@
     <!--materialize js-->
     <script type="text/javascript" src="js/materialize.min.js"></script>
     <!--prism
-    <script type="text/javascript" src="js/prism/prism.js"></script>-->
-    <!--scrollbar-->
-    <script type="text/javascript" src="js/plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <!-- chartist -->
-    <script type="text/javascript" src="js/plugins/chartist-js/chartist.min.js"></script>
+      <script type="text/javascript" src="js/prism/prism.js"></script>-->
+      <!--scrollbar-->
+      <script type="text/javascript" src="js/plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+      <!-- chartist -->
+      <script type="text/javascript" src="js/plugins/chartist-js/chartist.min.js"></script>
 
-    <!--plugins.js - Some Specific JS codes for Plugin Settings-->
-    <script type="text/javascript" src="js/plugins.min.js"></script>
-    <!--custom-script.js - Add your own theme custom JS-->
-    <script type="text/javascript" src="js/custom-script.js"></script>
+      <!--plugins.js - Some Specific JS codes for Plugin Settings-->
+      <script type="text/javascript" src="js/plugins.min.js"></script>
+      <!--custom-script.js - Add your own theme custom JS-->
+      <script type="text/javascript" src="js/custom-script.js"></script>
 
-</body>
+    </body>
 
-</html>
+    </html>
