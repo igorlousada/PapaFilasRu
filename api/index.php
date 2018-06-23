@@ -786,6 +786,7 @@ $app->get('/filas/liberaacesso', function (Request $request, Response $response,
 	elseif($hora_compara >=7 ){
 			if($hora_compara< 8 && $minuto_compara<30){
 					$preco_refeicao= 1; //1 é café
+					$id_refeicao = 1; //setando o id refeicao pro desjejum
 			}
 			
 
@@ -794,6 +795,7 @@ $app->get('/filas/liberaacesso', function (Request $request, Response $response,
 	elseif($hora_compara >11 ){
 			if($hora_compara< 14 && $minuto_compara<30){
 					$preco_refeicao= 2; //2 é almoço
+					$id_refeicao = 2; //setando o id refeicao pro almoco
 			}
 			
 
@@ -802,6 +804,7 @@ $app->get('/filas/liberaacesso', function (Request $request, Response $response,
 	elseif($hora_compara >17 ){
 			if($hora_compara< 19 && $minuto_compara<30){
 					$preco_refeicao= 3; //3 é janta
+					$id_refeicao = 3; //setando o id refeicao pro jantar
 			}
 			
 
@@ -910,6 +913,54 @@ $app->get('/filas/liberaacesso', function (Request $request, Response $response,
 	}	
 
 }); 
+
+#metodo historico de acesso. consulta se houve acesso e insere um historico de acesso
+$app->post('/filas/HistoricoAcesso', function (Request $request, Response $response, array $args) {
+    
+    $informacoes_acesso = json_decode($request->getBody());
+    
+    $matricula 		= $informacoes_acesso->matricula;
+    $data 			= $informacoes_acesso->data;
+    $hora 			= $informacoes_acesso->hora;
+    $id_usuario		= $informacoes_acesso->id_usuario;
+    $id_grupo 		= $informacoes_acesso->id_grupo;
+    $id_refeitorio	= $informacoes_acesso->id_refeitorio;
+    $id_refeicao	= $informacoes_acesso->id_refeicao;
+	 
+    //buscando por registros desse usuario nesse data e nessa refeicao
+    $sql = "SELECT `id_historico` FROM `historico_acesso` 
+    		WHERE (DATA = '$data' AND matricula = '$matricula' AND id_refeicao = '$id_refeicao')";
+    $pdo = db_connect();
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	//caso encontrado registro, usuario nao pode fazer refeicao novamente
+	if($stmt->rowCount()>0){
+    	$mensagem = 0;
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
+		return $return;   
+	}
+	//se nao encontrou, permitir entrada de usuario e registrar historico acesso
+	else{
+
+		$sql2 = "INSERT INTO `historico_acesso`(`id_usuario`, `id_refeitorio`, `id_refeicao`, `data`, `hora_entrada`, `matricula`, `id_grupo`) 
+				VALUES ('$id_usuario', '$id_refeitorio', '$id_refeicao', '$data', '$hora', '$matricula', '$id_grupo')";
+		$pdo = db_connect();
+		$stmt2 = $pdo->prepare($sql2);
+		$stmt2->execute();
+
+		//responde com 1 liberando o acesso
+		$mensagem = 1;
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
+		return $return;
+
+	}
+
+	
+});
+
 
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
