@@ -956,8 +956,45 @@ $app->post('/filas/HistoricoAcesso', function (Request $request, Response $respo
 		->withStatus(206);
 		return $return;
 
-	}
+	}	
+});
 
+
+$app->get('/admin/CorrigeTransacao/{id_transacao}', function (Request $request, Response $response,array $args) {
+	//0 = erro // 1= Ok
+	//precisa receber o id_transacao que na vdd = id_historico, verificar se o saldo_inserido é 0 (que significa que o saldo nao foi inserido ainda), mudar o saldo_inserido pra 1 e inserir saldo na carteira.
+	//caso o saldo_inserido ja seja 1, retornar um 206 com a mensagem: transação já validada.
+	$id_historico = $args['id_transacao'];
+	
+	$sql = "SELECT `saldo_inserido`, `valor_compra`, `id_usuario` FROM `historico_compra` WHERE id_historico = '$id_historico'";
+	$pdo = db_connect();
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	$info = $stmt->fetch(PDO::FETCH_OBJ);
+	$stmt->closeCursor();
+	$valor_compra		= $info->valor_compra;
+	$saldo_inserido 	= $info->saldo_inserido;
+	$id_usuario 		= $info->id_usuario;
+	
+	//se for 0, mudar o saldo_inserido pra 1 e inserir credito na carteira
+	if ($saldo_inserido == 0) {
+		$sql = "UPDATE `historico_compra` SET `saldo_inserido`='1' WHERE id_historico = '$id_historico'";
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute();
+		$stmt->closeCursor();
+		$sql = "UPDATE `carteira_usuario` SET `saldo`= saldo+'$valor_compra' WHERE id_usuario = '$id_usuario'";
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute();
+		$stmt->closeCursor();
+	}
+	//se o saldo_inserido=1, retorna mensagem com transacao ja validada
+	else{
+		$mensagem = new \stdClass();
+		$mensagem->mensagem = "Transação já validada";
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
+		return $return;
+	}
 	
 });
 
