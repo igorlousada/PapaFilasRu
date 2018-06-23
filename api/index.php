@@ -671,22 +671,75 @@ $app->get('/filas/status', function (Request $request, Response $response,array 
 	
 	
 	$dados = array( 'OCUPACAO_1' 		=> rand(0,200),
-					'TEMPO_FILA_1'	=> rand(0,200),
+					'TEMPO_FILA_1'		=> rand(0,200),
 					'OCUPACAO_2'		=> rand(0,200),
-					'TEMPO_FILA_2'	=> rand(0,200),
+					'TEMPO_FILA_2'		=> rand(0,200),
 					'OCUPACAO_3'		=> rand(0,200),
-					'TEMPO_FILA_3'	=> rand(0,200),
+					'TEMPO_FILA_3'		=> rand(0,200),
 					'OCUPACAO_4'		=> rand(0,200),
-					'TEMPO_FILA_4'	=> rand(0,200),
+					'TEMPO_FILA_4'		=> rand(0,200),
 					'OCUPACAO_5'		=> rand(0,200),
-					'TEMPO_FILA_5'	=> rand(0,200),
+					'TEMPO_FILA_5'		=> rand(0,200),
 					'OCUPACAO_6'		=> rand(0,200),
-					'TEMPO_FILA_6'	=> rand(0,200));
+					'TEMPO_FILA_6'		=> rand(0,200));
 
 
 	$return = $response->withJson($dados);
 	return $return;
 });
+
+#metodo admin insere saldo
+$app->post('/admin/inseresaldo/', function (Request $request, Response $response, array $args) {
+    
+    $informacoes = json_decode($request->getBody());
+    $matricula = $informacoes->matricula;
+    $saldo = $informacoes->saldo;
+
+    //buscando o id_usuario baseado na matricula
+    $pdo = db_connect();
+    $sql1 = "SELECT `id_usuario`FROM `usuario` WHERE matricula_usuario = '$matricula'";
+    $stmt = $pdo->prepare($sql1);
+	$stmt->execute();
+
+	if($stmt->rowCount()>0){ //achou id_usuario
+    $id_usuario   = $stmt->fetch(PDO::FETCH_OBJ);
+    
+	}
+	else{ //nao achou usuario
+		$mensagem = new \stdClass();
+	    $mensagem->mensagem = "Usuário não encontrado";
+	    $return = $response->withJson($mensagem)
+	    ->withStatus(206);
+	    return $return;
+	}
+
+	//procurar id_carteira e saldo nas carteiras
+	$sql = "SELECT `id_carteira`, `saldo` FROM `carteira_usuario` WHERE id_usuario = '$id_usuario->id_usuario'";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	//se achar, precisa pegar o saldo e somar com o atual
+	if($stmt->rowCount()>0){
+    $info_carteira  = $stmt->fetch(PDO::FETCH_OBJ);
+    $id_carteira 	= $info_carteira->id_carteira;
+    $saldo_antigo	= $info_carteira->saldo;
+    $saldo_novo = ($saldo_antigo + $saldo);
+
+    //somando o saldo atual com o valor inserido
+    $sql = "UPDATE `carteira_usuario` SET `saldo`='$saldo_novo' WHERE id_usuario = '$id_usuario->id_usuario'";
+    $stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	}
+
+	//se nao achar a carteira, precisa CRIAR uma carteira com o saldo
+	else{
+			$sql = "INSERT INTO `carteira_usuario` (`id_usuario`, `saldo`) VALUES ('$id_usuario->id_usuario', '$saldo')";
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute();
+	}	
+	
+});
+
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
