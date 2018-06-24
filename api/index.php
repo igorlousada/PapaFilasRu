@@ -7,15 +7,8 @@ $app = new \Slim\App;
 #arquivo com funcao db_connect() que retorna uma conexao dbo com o BD
 require 'conectadb.php';
 
-//require '../cep/vendor/autoload.php';
-//use JansenFelipe\CepGratis\CepGratis;
-
-
-#metodo de teste 1
-$app->get('/', function (Request $request, Response $response) use ($app) {
-    $response->getBody()->write("Bebê de Microservice!");
-    return $response;	
-});
+require '../cep/vendor/autoload.php';
+use JansenFelipe\CepGratis\CepGratis;
 
 
 #metodo de teste 2
@@ -61,7 +54,7 @@ $app->get('/usuarios/{matricula}', function (Request $request, Response $respons
 	$matricula = $args['matricula'];
 	$pdo = db_connect();
  
-	$sql="SELECT usu.*, round(cart.saldo,2) as saldo FROM usuario as usu inner join carteira_usuario as cart ON usu.id_usuario= cart.id_usuario where matricula_usuario= :matricula";
+	$sql="SELECT usu.*, cart.saldo as saldo FROM usuario as usu inner join carteira_usuario as cart ON usu.id_usuario= cart.id_usuario where matricula_usuario= :matricula";
 	$stmt=$pdo->prepare($sql);
 	$stmt->bindParam(":matricula", $matricula);
 	$stmt->execute();
@@ -215,14 +208,14 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 	//fecha o cursor do pdo
 	$stmt->closecursor();
 		
-	$sql2="INSERT 	INTO historico_compra 	(codigo_status, data_compra, id_historico, id_usuario, matricula_usuario, saldo_inserido, valor_compra) 
-					values 					(:CODIGO_STATUS, :DATA_COMPRA, NULL, :ID_USUARIO,:MATRICULA_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
+	$sql2="INSERT 	INTO historico_compra 	(id_status_pagamento, data_compra, id_historico, id_usuario, matricula_usuario, saldo_inserido, valor_compra) 
+					values 					(:ID_STATUS_PAGAMENTO, :DATA_COMPRA, NULL, :ID_USUARIO,:MATRICULA_USUARIO, :SALDO_INSERIDO, :VALOR_COMPRA) ";
 		
-	$codigo_status = 1;
+	$id_status_pagamento = 1;
 	$saldo_inserido = 0;
 	#prepara a insercao e executa no banco
 	$stmt=$pdo->prepare($sql2);				
-	$stmt->bindvalue(':CODIGO_STATUS', $codigo_status, PDO::PARAM_INT);
+	$stmt->bindvalue(':ID_STATUS_PAGAMENTO', $id_status_pagamento, PDO::PARAM_INT);
 	$stmt->bindvalue(":DATA_COMPRA", $hora_atual);
 	$stmt->bindParam(":ID_USUARIO", $usuario->id_usuario);
 	$stmt->bindParam(":MATRICULA_USUARIO", $usuario->matricula_usuario);
@@ -241,9 +234,6 @@ $app->post('/creditos/insereHistorico', function (Request $request, Response $re
 $app->put('/creditos/atualizasaldo', function (Request $request, Response $response,array $args) { // LINHA ALTEARADA 14/05/2018  AS 5H33
 	$objeto_put = json_decode($request->getBody());
 
-	//$id_transacao = "50188C5FB4B8432CA13AB9D6863EB5A0"; 
-
-	#busca informações da transação no pagseguro
 	$curl = curl_init();
 
 	curl_setopt_array($curl, array(
@@ -322,7 +312,7 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 
 	$pdo = db_connect();
  
-	$sql = "SELECT * FROM `historico_compra` WHERE matricula_usuario= :matricula";
+	$sql = "SELECT id_status_pagamento, date_format(data_compra,'%d/%m/%Y %H:%i') as data_compra, id_historico, id_usuario, matricula_usuario, saldo_inserido, replace(concat('R$ ',round(valor_compra,2)),'.',',') as valor_compra FROM `historico_compra` WHERE matricula_usuario= :matricula order by id_historico desc limit 12";
 	$stmt=$pdo->prepare($sql);
 	$stmt->bindParam(":matricula", $matricula);
 	$stmt->execute();
@@ -332,7 +322,7 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	if($stmt->rowCount()>0){
 		while($resultado = $stmt->fetch(PDO::FETCH_ASSOC)){
 		            $registro = array(
-                        "CODIGO_STATUS"   	=> $resultado["codigo_status"],
+                        "ID_STATUS_PAGAMENTO" => $resultado["id_status_pagamento"],
 						"DATA_COMPRA"  		=> $resultado["data_compra"],
                         "ID_HISTORICO"     	=> $resultado["id_historico"],
                         "ID_USUARIO" 		=> $resultado["id_usuario"],
@@ -356,6 +346,138 @@ $app->get('/historico/{matricula}', function (Request $request, Response $respon
 	
 });
 
+$app->get('/historico/{matricula}/last', function (Request $request, Response $response,array $args) {
+	$matricula = $args['matricula'];
+
+	$pdo = db_connect();
+ 
+	$sql = "SELECT id_status_pagamento, date_format(data_compra,'%d/%m/%Y %H:%i') as data_compra, id_historico, id_usuario, matricula_usuario, saldo_inserido, replace(concat('R$ ',round(valor_compra,2)),'.',',') as valor_compra FROM `historico_compra` WHERE matricula_usuario= :matricula order by id_historico desc limit 1";
+	$stmt=$pdo->prepare($sql);
+	$stmt->bindParam(":matricula", $matricula);
+	$stmt->execute();
+	
+
+
+	if($stmt->rowCount()>0){
+		while($resultado = $stmt->fetch(PDO::FETCH_ASSOC)){
+		            $registro = array(
+                        "ID_STATUS_PAGAMENTO" => $resultado["id_status_pagamento"],
+						"DATA_COMPRA"  		=> $resultado["data_compra"],
+                        "ID_HISTORICO"     	=> $resultado["id_historico"],
+                        "ID_USUARIO" 		=> $resultado["id_usuario"],
+                        "MATRICULA_USUARIO" => $resultado["matricula_usuario"],
+						"SALDO_INSERIDO"   	=> $resultado["saldo_inserido"],
+						"VALOR_COMPRA"		=> $resultado["valor_compra"],
+                    );
+		 }
+		
+	$return = $response->withJson($registro)->withHeader('Content-type', 'application/json');
+	return $return;
+	
+	}else{
+		$mensagem = new \stdClass();
+		$mensagem->mensagem = "Usuário não encontrado. Verifique a matricula informada";
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
+	  	return $return;
+	}
+	
+});
+
+
+
+$app->post('/creditos/notificacaops', function (Request $request, Response $response) {
+	parse_str($request->getBody());
+
+		#busca informações da transação no pagseguro
+	$curl = curl_init();
+
+	curl_setopt_array($curl, array(
+		CURLOPT_URL => 'https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/'.$notificationCode.'?email=moises.dandico23@gmail.com&token=93D0433C38974DD2B3001F53B30CEA45',  // alterado para versão 2 as 5h47
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_ENCODING => "",
+		CURLOPT_MAXREDIRS => 10,
+		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		CURLOPT_CUSTOMREQUEST => "GET",
+		CURLOPT_POSTFIELDS => "",
+		CURLOPT_HTTPHEADER => array("content-type: application/x-www-form-urlencoded; charset=ISO-8859-1"),
+	));
+	$resposta = curl_exec($curl);
+	$err = curl_error($curl);
+	curl_close($curl);
+
+	#trata a resposta recebida do pagseguro
+	$resposta = simplexml_load_string($resposta);
+	$status = $resposta->status;
+	$ID_HISTORICO= $resposta->reference;
+
+	#busca as informações da transação no banco de dados do papafilas
+	$pdo = db_connect();
+	$sql = "SELECT * FROM `historico_compra` WHERE id_historico= :HISTORICO";
+	$stmt=$pdo->prepare($sql);	
+	$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+	$stmt->execute();
+	$usuario= $stmt->fetch(PDO::FETCH_OBJ);
+	
+	
+	#Se a transação está com status pago e o saldo ainda não foi inserido
+	if(($status == 3 || $status == 4)  && $usuario->saldo_inserido == 0){
+		
+		#libera a conexão pdo para nova utilização
+		$stmt->closecursor();
+		
+		$sql2="UPDATE carteira_usuario SET  saldo=saldo+'$resposta->grossAmount' WHERE id_usuario= :USUARIO;
+			UPDATE historico_compra SET  saldo_inserido=1,id_status_pagamento='2' WHERE id_historico= :HISTORICO";
+
+		$stmt=$pdo->prepare($sql2);
+		$stmt->bindParam(":USUARIO", $usuario->id_usuario);
+		$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+		$stmt->execute();
+	}
+	
+	if(($status == 3 || $status == 4) && $usuario->saldo_inserido == 1){
+				$mensagem = new \stdClass();
+				$mensagem->mensagem = "Os créditos dessa compra já foram inseridos em sua conta.";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				echo "$usuario->saldo_inserido";
+				return $return;
+	}
+	if($status == 1 || $status == 2){
+		
+		$stmt->closecursor();
+		
+		$sql3="UPDATE historico_compra SET  saldo_inserido=0,id_status_pagamento='1' WHERE id_historico= :HISTORICO";
+
+		$stmt=$pdo->prepare($sql3);  ;
+		$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+		$stmt->execute();
+		
+				$mensagem = new \stdClass();
+				$mensagem->mensagem = "Sua compra está sendo processada. Assim que aprovada seus créditos serão inseridos";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+	if($status == 7){
+		$status = 3;
+		$stmt->closecursor();
+		
+		$sql4="UPDATE historico_compra SET  saldo_inserido=1,id_status_pagamento=$status WHERE id_historico= :HISTORICO";
+
+		$stmt=$pdo->prepare($sql4);
+		$stmt->bindParam(":HISTORICO", $ID_HISTORICO);
+		$stmt->execute();
+		
+				$mensagem = new \stdClass();
+				$mensagem->mensagem = "Desculpe mas seu pagamento não foi aprovado pela operadora. Tente novamente ou verifique os dados inseridos";
+				$return = $response->withJson($mensagem)
+				->withStatus(206);
+				return $return;
+	}
+	
+});
+ 
  
  #método para gerar codigo de inicio de sessão Pagseguro Transparente
 $app->post('/creditos/iniciaSessao', function (Request $request, Response $response, array $args) {
@@ -400,7 +522,7 @@ $app->post('/creditos/buscacep', function (Request $request, Response $response,
 	$return = $response->withJson($dados)->withHeader('Content-type', 'application/json');
     return $return;
 
-});
+});  
 
 $app->post('/creditos/buscacepapp', function (Request $request, Response $response, array $args) {
 	$info=json_decode($request->getBody());
@@ -409,7 +531,8 @@ $app->post('/creditos/buscacepapp', function (Request $request, Response $respon
 	$return = $response->withJson($dados)->withHeader('Content-type', 'application/json');
     return $return;
 
-});    
+});  
+
 
 $app->post('/creditos/pagamento', function (Request $request, Response $response) {
 	$dados = json_decode($request->getBody());
@@ -506,7 +629,6 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
   $sql1=" SELECT * FROM `cardapio_desjejum`   WHERE data_refeicao = '$anomesdia'";
   $sql2=" SELECT * FROM `cardapio_almoco`   WHERE data_refeicao = '$anomesdia'";
   $sql3=" SELECT * FROM `cardapio_jantar`   WHERE data_refeicao = '$anomesdia'";
-
   //statment 1: desjejum
   $stmt1=$pdo->prepare($sql1);
   $stmt1->execute();
@@ -514,8 +636,6 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
   $stmt2->execute();
   $stmt3=$pdo->prepare($sql3);
   $stmt3->execute();
-
-
   if(($stmt1->rowCount()>0)AND($stmt2->rowCount()>0)AND($stmt3->rowCount()>0)){
     $desjejum   = $stmt1->fetch(PDO::FETCH_ASSOC);
     $almoco   = $stmt2->fetch(PDO::FETCH_ASSOC);
@@ -528,13 +648,10 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
        "BEBIDAS_Q_VEG_1" 	=> utf8_encode($desjejum["bebidas_q_veg"]),
        "ACHOCOLATADO_1"		=> utf8_encode($desjejum["achocolatado"]),
        "PAO_1" 				=> utf8_encode($desjejum["pao"]),
-       "PAO_VEG_1" 			=> utf8_encode($desjejum["pao_veg"]),
        "COMPLEMENTO_1" 		=> utf8_encode($desjejum["complemento"]),
-       "COMPLEMENTO_VEG_1" 	=> utf8_encode($desjejum["complemento_veg"]),
        "PROTEINA_1"			=> utf8_encode($desjejum["proteina"]),
        "PROTEINA_VEG_1" 	=> utf8_encode($desjejum["proteina_veg"]),
        "FRUTA_1" 			=> utf8_encode($desjejum["fruta"]),
-
        "ID_REFEICAO_2" 		=> 			   $almoco["id_refeicao"],
        "DATA_REFEICAO_2" 	=> 			   $almoco["data_refeicao"],
        "SALADA_2" 			=> utf8_encode($almoco["salada"]),
@@ -545,7 +662,6 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
        "ACOMPANHAMENTOS_2"	=> utf8_encode($almoco["acompanhamentos"]),
        "SOBREMESA_2" 		=> utf8_encode($almoco["sobremesa"]),
        "REFRESCO_2" 		=> utf8_encode($almoco["refresco"]),
-
        "ID_REFEICAO_3" 		=> 			   $jantar["id_refeicao"],
        "DATA_REFEICAO_3" 	=> 			   $jantar["data_refeicao"],
        "SALADA_3" 			=> utf8_encode($jantar["salada"]),
@@ -571,472 +687,151 @@ $app->get('/cardapio/{anomesdia}', function (Request $request, Response $respons
     }
 });
 
-
-#metodo retorna preço da refeicao
-$app->get('/preco/{matricula}', function (Request $request, Response $response,array $args) {
-  $matricula = $args['matricula'];
-  $pdo = db_connect();
- 
-  $sql= "SELECT id_grupo FROM `usuario` WHERE matricula_usuario = '$matricula'";
-
-  $stmt=$pdo->prepare($sql);
-  $stmt->execute();
-  
-  if($stmt->rowCount()>0){
-    $id_grupo   = $stmt->fetch(PDO::FETCH_ASSOC);
-    $id_grupo = $id_grupo['id_grupo'];
-    if ($id_grupo == 1){
-    	$preco_cafe 	= 0;
-    	$preco_almoco 	= 0;
-    	$preco_jantar 	= 0; 
-    }
-    elseif ($id_grupo == 2){
-    	$preco_cafe 	= 1;
-    	$preco_almoco	= 1;
-    	$preco_jantar 	= 1;
-    }
-    elseif ($id_grupo == 3){
-		$preco_cafe 	= 2.50;
-    	$preco_almoco 	= 2.50;
-    	$preco_jantar 	= 2.50;    	
-    }
-    elseif ($id_grupo == 4){
-    	$preco_cafe 	= 7;
-    	$preco_almoco 	= 13;
-    	$preco_jantar 	= 13;
-    }
-
-
-    //grupo 1 nao paga
-    //grupo 2 paga 1 real em todas as refeicoes
-    //grupo 3 paga 2,50 em todas as refeicoes
-    //grupo 4 paga 7 no cafe, 13 no almoco e jantar
-    
-    $preco = array ("preco_desjejum" => $preco_cafe,
-    				"preco_almoco" => $preco_almoco,
-    				"preco_jantar" => $preco_jantar);
-     
-    $resultado = $response->withJson($preco)->withHeader('Content-type', 'application/json');
-	return $resultado;
-  
-  }else{ 
-    $mensagem = new \stdClass();
-    $mensagem->mensagem = "Precos nao encontrados";
-    $return = $response->withJson($mensagem)
-    ->withStatus(206);
-    return $return;
-    }
-});
-
-#metodo insere cardapio de desjejum
-$app->post('/cardapio/inserirdesjejum/', function (Request $request, Response $response, array $args) {
-    
-    $desjejum = json_decode($request->getBody());
-    
-    $pdo = db_connect();
-	$sql = "INSERT INTO `cardapio_desjejum` (`data_refeicao`, `bebidas_q`, `bebidas_q_veg`, `achocolatado`, `pao`, `pao_veg`, `complemento`, `complemento_veg`, `proteina`, `proteina_veg`, `fruta`) VALUES ('$desjejum->DATA_REFEICAO', '$desjejum->BEBIDAS_Q', '$desjejum->BEBIDAS_Q_VEG', '$desjejum->ACHOCOLATADO', '$desjejum->PAO', '$desjejum->PAO_VEG', '$desjejum->COMPLEMENTO', '$desjejum->COMPLEMENTO_VEG', '$desjejum->PROTEINA', '$desjejum->PROTEINA_VEG', '$desjejum->FRUTA')";
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
-
-});
-
-#metodo insere cardapio de almoco
-$app->post('/cardapio/inseriralmoco/', function (Request $request, Response $response, array $args) {
-    
-    $almoco = json_decode($request->getBody());
-    
-    $pdo = db_connect();
-	$sql = "INSERT INTO `cardapio_almoco`(`data_refeicao`, `salada`, `molho`, `prato_principal`, `guarnicao`, `prato_veg`, `acompanhamentos`, `sobremesa`, `refresco`) 
-			VALUES ('$almoco->DATA_REFEICAO', '$almoco->SALADA', '$almoco->MOLHO', '$almoco->PRATO_PRINCIPAL', '$almoco->GUARNICAO', '$almoco->PRATO_VEG', '$almoco->ACOMPANHAMENTOS', '$almoco->SOBREMESA', '$almoco->REFRESCO')";
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
-	
-});
-
-#metodo insere cardapio de janta
-$app->post('/cardapio/inserirjantar/', function (Request $request, Response $response, array $args) {
-    
-    $jantar = json_decode($request->getBody());
-    
-    $pdo = db_connect();
-	$sql = "INSERT INTO `cardapio_jantar`(`data_refeicao`, `salada`, `molho`, `sopa`, `pao`, `prato_principal`, `prato_veg`, `complementos`, `sobremesa`, `refresco`) 
-			VALUES ('$jantar->DATA_REFEICAO', '$jantar->SALADA', '$jantar->MOLHO', '$jantar->SOPA', '$jantar->PAO', '$jantar->PRATO_PRINCIPAL', '$jantar->PRATO_VEG', '$jantar->COMPLEMENTOS', '$jantar->SOBREMESA', '$jantar->REFRESCO')";
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
-	
-});
-
-
 $app->get('/filas/status', function (Request $request, Response $response,array $args) {
 	
 	
 	$dados = array( 'OCUPACAO_1' 		=> rand(0,200),
-					'TEMPO_FILA_1'		=> rand(0,200),
+					'TEMPO_FILA_1'	=> rand(0,200),
 					'OCUPACAO_2'		=> rand(0,200),
-					'TEMPO_FILA_2'		=> rand(0,200),
+					'TEMPO_FILA_2'	=> rand(0,200),
 					'OCUPACAO_3'		=> rand(0,200),
-					'TEMPO_FILA_3'		=> rand(0,200),
+					'TEMPO_FILA_3'	=> rand(0,200),
 					'OCUPACAO_4'		=> rand(0,200),
-					'TEMPO_FILA_4'		=> rand(0,200),
+					'TEMPO_FILA_4'	=> rand(0,200),
 					'OCUPACAO_5'		=> rand(0,200),
-					'TEMPO_FILA_5'		=> rand(0,200),
+					'TEMPO_FILA_5'	=> rand(0,200),
 					'OCUPACAO_6'		=> rand(0,200),
-					'TEMPO_FILA_6'		=> rand(0,200));
+					'TEMPO_FILA_6'	=> rand(0,200));
 
 
 	$return = $response->withJson($dados);
 	return $return;
 });
-
-#metodo admin insere saldo
-$app->post('/admin/inseresaldo/', function (Request $request, Response $response, array $args) {
-    
-    $informacoes = json_decode($request->getBody());
-    $matricula = $informacoes->matricula;
-    $saldo = $informacoes->saldo;
-
-    //buscando o id_usuario baseado na matricula
-    $pdo = db_connect();
-    $sql1 = "SELECT `id_usuario`FROM `usuario` WHERE matricula_usuario = '$matricula'";
-    $stmt = $pdo->prepare($sql1);
-	$stmt->execute();
-
-	if($stmt->rowCount()>0){ //achou id_usuario
-    $id_usuario   = $stmt->fetch(PDO::FETCH_OBJ);
-    
-	}
-	else{ //nao achou usuario
-		$mensagem = new \stdClass();
-	    $mensagem->mensagem = "Usuário não encontrado";
-	    $return = $response->withJson($mensagem)
-	    ->withStatus(206);
-	    return $return;
-	}
-
-	//procurar id_carteira e saldo nas carteiras
-	$sql = "SELECT `id_carteira`, `saldo` FROM `carteira_usuario` WHERE id_usuario = '$id_usuario->id_usuario'";
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
-
-	//se achar, precisa pegar o saldo e somar com o atual
-	if($stmt->rowCount()>0){
-    $info_carteira  = $stmt->fetch(PDO::FETCH_OBJ);
-    $id_carteira 	= $info_carteira->id_carteira;
-    $saldo_antigo	= $info_carteira->saldo;
-    $saldo_novo = ($saldo_antigo + $saldo);
-
-    //somando o saldo atual com o valor inserido
-    $sql = "UPDATE `carteira_usuario` SET `saldo`='$saldo_novo' WHERE id_usuario = '$id_usuario->id_usuario'";
-    $stmt = $pdo->prepare($sql);
-	$stmt->execute();
-	}
-
-	//se nao achar a carteira, precisa CRIAR uma carteira com o saldo
-	else{
-			$sql = "INSERT INTO `carteira_usuario` (`id_usuario`, `saldo`) VALUES ('$id_usuario->id_usuario', '$saldo')";
-			$stmt = $pdo->prepare($sql);
-			$stmt->execute();
-	}	
+$app->post('/webadmin/addadmin', function (Request $request, Response $response, array $args) {
+	$info=json_decode($request->getBody());
+	$pdo = db_connect();
+ 
+	$sql = "SELECT nome_admin FROM `administrador` WHERE nome_admin= :NOME";
 	
-});
-
-
-$app->get('/filas/liberaacesso', function (Request $request, Response $response, array $args){
-	//$acesso = json_decode($request->getBody()); 
-
-	//$refeitorio = $acesso->id_refeitorio;
-	//$matricula = $acesso->MATRICULA;
-	$refeitorio = "4";
-	$matricula = "170042502";
-	$pdo= db_connect(); 
-	$sql = "SELECT id_status, id_grupo, id_usuario FROM `usuario` WHERE matricula_usuario= :MATRICULA";		
-	 $stmt=$pdo->prepare($sql);
-	
-	$stmt->bindParam(":MATRICULA", $matricula);
+	$stmt=$pdo->prepare($sql);
+	$stmt->bindParam(":NOME", $info->NOME_ADMIN);
 	$stmt->execute();
 	$usuario = $stmt->fetch(PDO::FETCH_OBJ);
-	$id_grupo= $usuario->id_grupo;
-	$sql1 = "SELECT saldo FROM `carteira_usuario` WHERE id_usuario= :idUsuario";	
-	 $stmt1=$pdo->prepare($sql1);
-	$stmt1->bindParam(":idUsuario", $usuario->id_usuario);
-	$stmt1->execute();
-	$carteira = $stmt1->fetch(PDO::FETCH_OBJ);
-	$carteira->saldo += 0;
-	var_export($carteira->saldo);
 	
-	$hora_atual = date("h:i:s");
-	$hora_compara= date("h");
-	$hora_compara += 0;
-	$minuto_compara = date("i");
-	$minuto_compara += 0;
-	$hora_compara  = 7;
-	$minuto_compara = 0;
-	$id_grupo= 3;
-
-	if($hora_compara <7 ){
-			echo "RU fechado";
-
-	}
-
-	elseif($hora_compara > 19 && $minuto_compara> 30){
-				echo "RU fechado";
-	}
-
-
-	elseif($hora_compara >=7 ){
-			if($hora_compara< 8 && $minuto_compara<30){
-					$preco_refeicao= 1; //1 é café
-					$id_refeicao = 1; //setando o id refeicao pro desjejum
-			}
-			
-
-	}
-
-	elseif($hora_compara >11 ){
-			if($hora_compara< 14 && $minuto_compara<30){
-					$preco_refeicao= 2; //2 é almoço
-					$id_refeicao = 2; //setando o id refeicao pro almoco
-			}
-			
-
-	}
-
-	elseif($hora_compara >17 ){
-			if($hora_compara< 19 && $minuto_compara<30){
-					$preco_refeicao= 3; //3 é janta
-					$id_refeicao = 3; //setando o id refeicao pro jantar
-			}
-			
-
-	}
-
-	else{
-		echo "RU FECHADO PELO ELSE";
-		echo "else funfando";
-	}
-
-	
-
-	if($usuario->id_status == 1){
-
-		 	 if ($id_grupo == 1){
-    		
-    		echo "acesso liberado";
-    		$saldo_ok = 1;
-   		 }
-    elseif ($id_grupo == 2){
-    		$preco_cafe 	= 1;
-    		$preco_almoco	= 1;
-    		$preco_jantar 	= 1;
-    		if($preco_refeicao == 1){
-    			$preco= $preco_cafe; 
-    		}
-    		if($preco_refeicao == 2){
-    			$preco= $preco_almoco; 
-    		}
-    		if($preco_refeicao == 3){
-    			$preco= $preco_janta; 
-    		}
-    		
-
-    		if($carteira->saldo >= $preco){
-    			$saldo_ok = 1;
-    			echo "acesso liberado";
-    		}
-    		$saldo_ok = 0;
-    }
-    elseif ($id_grupo == 3){
-    	$preco_cafe 	= 2.50;
-    	$preco_almoco 	= 2.50;
-    	$preco_jantar 	= 2.50;    	
-
-    	if($preco_refeicao == 1){
-    			$preco= $preco_cafe; 
-    		}
-    		if($preco_refeicao == 2){
-    			$preco= $preco_almoco; 
-    		}
-    		if($preco_refeicao == 3){
-    			$preco= $preco_janta; 
-    		}
-    		
-
-    		
-		if($carteira->saldo >= $preco){
-    			echo "acesso liberado";
-    			$saldo_ok = 1;
-    		}	
-    		$saldo_ok = 0;
-    }
-    elseif ($id_grupo == 4){
-
-    	$preco_cafe 	= 7;
-    	$preco_almoco 	= 13;
-    	$preco_jantar 	= 13;
-
-
-    	if($preco_refeicao == 1){
-    			$preco= $preco_cafe; 
-    		}
-    		if($preco_refeicao == 2){
-    			$preco= $preco_almoco; 
-    		}
-    		if($preco_refeicao == 3){
-    			$preco= $preco_janta; 
-    		}
-    	if($carteira->saldo >= $preco){
-    			$saldo_ok = 1;
-    		}
-    		$saldo_ok = 0;
-	}
-	if($saldo_ok  == 1){
-		
-			$resposta = 1;
-
-	}
-	else{
-		$reposta = 0;
-		echo "saldo insuficiente";
-
-	}
-
-	}
-	if($resposta == 1){
-		$pdo= db_connect(); 
-		$saldo = $carteira->saldo - $preco;
-		$sql2 = "UPDATE `carteira_usuario` SET `saldo` ='$saldo' WHERE id_usuario =:idUsario";			 //  $sql = "UPDATE `carteira_usuario` SET `saldo`='$saldo_novo' WHERE id_usuario = '$id_usuario->id_usuario'";
-	 $stmt2=$pdo->prepare($sql2);
-	$stmt2->bindParam(":idUsario", $usuario->id_usuario);
-	$stmt2->execute();
-	
-
-	}	
-
-}); 
-
-#metodo historico de acesso. consulta se houve acesso e insere um historico de acesso
-$app->post('/filas/HistoricoAcesso', function (Request $request, Response $response, array $args) {
-    
-    $informacoes_acesso = json_decode($request->getBody());
-    
-    $matricula 		= $informacoes_acesso->matricula;
-    $data 			= $informacoes_acesso->data;
-    $hora 			= $informacoes_acesso->hora;
-    $id_usuario		= $informacoes_acesso->id_usuario;
-    $id_grupo 		= $informacoes_acesso->id_grupo;
-    $id_refeitorio	= $informacoes_acesso->id_refeitorio;
-    $id_refeicao	= $informacoes_acesso->id_refeicao;
-	 
-    //buscando por registros desse usuario nesse data e nessa refeicao
-    $sql = "SELECT `id_historico` FROM `historico_acesso` 
-    		WHERE (DATA = '$data' AND matricula = '$matricula' AND id_refeicao = '$id_refeicao')";
-    $pdo = db_connect();
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
-
-	//caso encontrado registro, usuario nao pode fazer refeicao novamente
 	if($stmt->rowCount()>0){
-    	$mensagem = 0;
-		$return = $response->withJson($mensagem)
-		->withStatus(206);
-		return $return;   
-	}
-	//se nao encontrou, permitir entrada de usuario e registrar historico acesso
-	else{
-
-		$sql2 = "INSERT INTO `historico_acesso`(`id_usuario`, `id_refeitorio`, `id_refeicao`, `data`, `hora_entrada`, `matricula`, `id_grupo`) 
-				VALUES ('$id_usuario', '$id_refeitorio', '$id_refeicao', '$data', '$hora', '$matricula', '$id_grupo')";
-		$pdo = db_connect();
-		$stmt2 = $pdo->prepare($sql2);
-		$stmt2->execute();
-
-		//responde com 1 liberando o acesso
-		$mensagem = 1;
+		$mensagem = new \stdClass();
+		$mensagem->mensagem = "Usuário já cadastrado em nosso sistema.";
 		$return = $response->withJson($mensagem)
 		->withStatus(206);
 		return $return;
+	}
 
-	}	
+	$stmt->closecursor();
+		
+	$sql2="INSERT 	INTO administrador 	(id_restaurante, nome_admin, senha_admin) 
+					values(:RESTAURANTE, :NOME, :SENHA)";
+	$id_restaurante = 1;	
+
+	$stmt=$pdo->prepare($sql2);				
+	$stmt->bindParam(":NOME", $info->NOME_ADMIN);
+	$stmt->bindParam(":SENHA", $info->SENHA_ADMIN);
+	$stmt->bindvalue(":RESTAURANTE", $id_restaurante, PDO::PARAM_INT);
+	$stmt->execute();	
+
+	$info->MENSAGEM = "Usuário cadastrado com sucesso";
+
+	$ret = $response->withJson($info)->withHeader('Content-type', 'application/json');
+	return $ret;
+
+
 });
-
-
-$app->get('/admin/CorrigeTransacao/{id_transacao}', function (Request $request, Response $response,array $args) {
-	//0 = erro // 1= Ok
-	//precisa receber o id_transacao que na vdd = id_historico, verificar se o saldo_inserido é 0 (que significa que o saldo nao foi inserido ainda), mudar o saldo_inserido pra 1 e inserir saldo na carteira.
-	//caso o saldo_inserido ja seja 1, retornar um 206 com a mensagem: transação já validada.
-	$id_historico = $args['id_transacao'];
-	
-	$sql = "SELECT `saldo_inserido`, `valor_compra`, `id_usuario` FROM `historico_compra` WHERE id_historico = '$id_historico'";
+$app->post('/webadmin/login', function (Request $request, Response $response, array $args) {
+	$info=json_decode($request->getBody());
 	$pdo = db_connect();
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
-	$info = $stmt->fetch(PDO::FETCH_OBJ);
-	$stmt->closeCursor();
-	$valor_compra		= $info->valor_compra;
-	$saldo_inserido 	= $info->saldo_inserido;
-	$id_usuario 		= $info->id_usuario;
+ 
+
+	$sql = "SELECT id_admin, nome_admin, senha_admin FROM `administrador` WHERE nome_admin= :NOME and senha_admin =:SENHA";
 	
-	//se for 0, mudar o saldo_inserido pra 1 e inserir credito na carteira
-	if ($saldo_inserido == 0) {
-		$sql = "UPDATE `historico_compra` SET `saldo_inserido`='1' WHERE id_historico = '$id_historico'";
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-		$stmt->closeCursor();
-		$sql = "UPDATE `carteira_usuario` SET `saldo`= saldo+'$valor_compra' WHERE id_usuario = '$id_usuario'";
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-		$stmt->closeCursor();
-	}
-	//se o saldo_inserido=1, retorna mensagem com transacao ja validada
-	else{
+
+	$stmt=$pdo->prepare($sql);
+
+	$stmt->bindParam(":NOME", $info->NOME_ADMIN);
+	$stmt->bindParam(":SENHA", $info->SENHA_ADMIN);
+	$stmt->execute();
+	$usuario = $stmt->fetch(PDO::FETCH_OBJ);
+	
+	if($stmt->rowCount()>0){
+		$ret = $response->withJson($info)->withHeader('Content-type', 'application/json');
+		return $ret;
+	}else{
 		$mensagem = new \stdClass();
-		$mensagem->mensagem = "Transação já validada";
+		$mensagem->mensagem = "Usuário não cadastrado em nosso sistema.";
 		$return = $response->withJson($mensagem)
 		->withStatus(206);
 		return $return;
 	}
+});
+$app->post('/propaganda', function (Request $request, Response $response, array $args) {
+	$info=json_decode($request->getBody());
+	$pdo = db_connect();
+
+		
+	$sql="INSERT 	INTO propagandas(id_restaurante, data_inicio, data_fim,url_imagem) 
+					values(:RESTAURANTE, :DTINICIO, :DTFIM, :URL)";
+	$id_restaurante = 1;	
+
+	$stmt=$pdo->prepare($sql);
+	$stmt->bindvalue(":RESTAURANTE", $id_restaurante, PDO::PARAM_INT);	
+	$stmt->bindParam(":DTINICIO", $info->DATA_INICIO);
+	$stmt->bindParam(":DTFIM", $info->DATA_FIM);
+	$stmt->bindParam(":URL", $info->URL);
 	
+	//permitir validar se a operação foi realizada com sucesso. INSERIR EM TODOS OS MÉTODOS
+	$validacao = $stmt->execute();	
+
+	if($validacao){
+	$info->MENSAGEM = "Propaganda cadastrada com sucesso";
+
+	$ret = $response->withJson($info)->withHeader('Content-type', 'application/json');
+	return $ret;
+	}else{
+	$info->MENSAGEM = "Erro ao cadastrar propaganda";
+	$ret = $response->withJson($info)->withHeader('Content-type', 'application/json');
+	return $ret;
+	}
 });
 
+$app->get('/propaganda/lista', function (Request $request, Response $response, array $args) {
+	
+	$pdo = db_connect();
+	$data_atual = date("Y-m-d");
+		
+	$sql="select * from propagandas where data_inicio<'$data_atual' and data_fim>'$data_atual'";
 
-#metodo para listar todos os usuarios
-$app->get('/admin/ListaAcesso/{data}', function (Request $request, Response $response,array $args) {
- 	$data = $args['data'];
-    
- 	$pdo = db_connect();
-	$sql = "SELECT * FROM `historico_acesso` WHERE data = '$data'";
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute();
+	$stmt=$pdo->prepare($sql);
 
-	if($stmt->rowCount()>0){		
-		while($resultado = $stmt->fetch(PDO::FETCH_OBJ)) {
-		    $acessos = array(
-                        "id_historico"   		=> $resultado->id_historico,
-						"id_usuario"   			=> $resultado->id_usuario,
-                        "id_refeitorio"     	=> $resultado->id_refeitorio,
-                        "id_refeicao" 			=> $resultado->id_refeicao,
-                        "hora_entrada"    		=> $resultado->hora_entrada,
-						"matricula"   			=> $resultado->matricula,
-						"id_grupo"				=> $resultado->id_grupo,
-                    );					
-			$retorno[] = $acessos;
-			
+	$stmt->execute();	
+	if($stmt->rowCount()>0){
+		while($resultado = $stmt->fetch(PDO::FETCH_ASSOC)){
+		        $registro = array(
+                    "ID_PROPAGANDA"   		=> $resultado["id_propaganda"],
+					"DATA_INICIO"   		=> $resultado["data_inicio"],
+                    "DATA_FIM"     			=> ($resultado["data_fim"]),
+                    "URL" 					=> $resultado["url_imagem"],
+                );
+			$vetor_registros[] = $registro; 
 		}
-		#exibindo resultados
-		$return = $response->withJson($retorno);
+		
+		$return = $response->withJson($vetor_registros)->withHeader('Content-type', 'application/json');
 		return $return;
-	}
-	else{
-		$mensagem = new \stdClass();
-		$mensagem->mensagem = "Nenhum acesso encontrado";
-		$return = $response->withJson($mensagem)
-		->withStatus(206);
-		return $return;
-	}
-	
-});
-
-
+	}else{
+			$mensagem = new \stdClass();
+			$mensagem->mensagem = "não existem propagandas cadastradas";
+			$return = $response->withJson($mensagem)
+			->withStatus(206);
+			return $return;
+	}	
+});  
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
