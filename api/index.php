@@ -999,6 +999,44 @@ $app->get('/admin/CorrigeTransacao/{id_transacao}', function (Request $request, 
 });
 
 
+#metodo para listar todos os usuarios
+$app->get('/admin/ListaAcesso/{data}', function (Request $request, Response $response,array $args) {
+ 	$data = $args['data'];
+    
+ 	$pdo = db_connect();
+	$sql = "SELECT * FROM `historico_acesso` WHERE data = '$data'";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	if($stmt->rowCount()>0){		
+		while($resultado = $stmt->fetch(PDO::FETCH_OBJ)) {
+		    $acessos = array(
+                        "id_historico"   		=> $resultado->id_historico,
+						"id_usuario"   			=> $resultado->id_usuario,
+                        "id_refeitorio"     	=> $resultado->id_refeitorio,
+                        "id_refeicao" 			=> $resultado->id_refeicao,
+                        "hora_entrada"    		=> $resultado->hora_entrada,
+						"matricula"   			=> $resultado->matricula,
+						"id_grupo"				=> $resultado->id_grupo,
+                    );					
+			$retorno[] = $acessos;
+			
+		}
+		#exibindo resultados
+		$return = $response->withJson($retorno);
+		return $return;
+	}
+	else{
+		$mensagem = new \stdClass();
+		$mensagem->mensagem = "Nenhum acesso encontrado";
+		$return = $response->withJson($mensagem)
+		->withStatus(206);
+		return $return;
+	}
+	
+});
+
+
 
 // ^^^^^^^ nao apagar essa linha de jeito nenhum. e só codar daqui pra cima ^^^^^
 $app->run();
