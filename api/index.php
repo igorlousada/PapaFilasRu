@@ -7,8 +7,8 @@ $app = new \Slim\App;
 #arquivo com funcao db_connect() que retorna uma conexao dbo com o BD
 require 'conectadb.php';
 
-require '../cep/vendor/autoload.php';
-use JansenFelipe\CepGratis\CepGratis;
+//require '../cep/vendor/autoload.php';
+//use JansenFelipe\CepGratis\CepGratis;
 
 
 #metodo de teste 2
@@ -801,6 +801,217 @@ $app->post('/propaganda', function (Request $request, Response $response, array 
 	}
 });
 
+$app->post('/filas/liberaacesso', function (Request $request, Response $response, array $args){
+	$acesso = json_decode($request->getBody()); 
+
+	$refeitorio = $acesso->id_refeitorio;
+	$matricula = $acesso->MATRICULA;
+	//$refeitorio = "4";
+	//$matricula = "170042502";
+	$pdo= db_connect(); 
+	$sql = "SELECT id_status, id_grupo, id_usuario FROM `usuario` WHERE matricula_usuario= :MATRICULA";		
+	 $stmt=$pdo->prepare($sql);
+	
+	$stmt->bindParam(":MATRICULA", $matricula);
+	$stmt->execute();
+	$usuario = $stmt->fetch(PDO::FETCH_OBJ);
+	$id_grupo= $usuario->id_grupo;
+	$status= $usuario->id_status;
+	$sql1 = "SELECT saldo FROM `carteira_usuario` WHERE id_usuario= :idUsuario";	
+	 $stmt1=$pdo->prepare($sql1);
+	$stmt1->bindParam(":idUsuario", $usuario->id_usuario);
+	$stmt1->execute();
+	$carteira = $stmt1->fetch(PDO::FETCH_OBJ);
+	$carteira->saldo += 0;
+	//var_export($carteira->saldo);
+	
+	$hora_atual = date("h:i:s");
+	$hora_compara= date("h");
+	$hora_compara += 0;
+	$minuto_compara = date("i");
+	$minuto_compara += 0;
+	$hora_compara  = 7;
+	$minuto_compara = 37;
+	$id_grupo= 4;
+
+	if($hora_compara <7 ){
+			echo "RU fechado";
+
+	}
+
+
+
+	elseif($hora_compara > 19 && $minuto_compara> 30){
+				echo "RU fechado";
+	}
+
+
+	elseif(($hora_compara >=7 && $hora_compara<=8) ){
+			if($hora_compara== 8 ){
+					if($minuto_compara >30){
+					echo "RU fechado";
+						$status=0;
+						$resposta = 0;
+			
+			}
+		}
+			else{
+					$preco_refeicao= 1; //1 é café
+					$id_refeicao = 1; //setando o id refeicao pro desjejum
+			
+		}	
+			
+	}
+
+
+	elseif(($hora_compara >=11 && $hora_compara <= 14)){
+			if($hora_compara == 14 /*&& $minuto_compara<=30*/){
+					if($minuto_compara > 30 ){
+						//echo " e esse?";
+						echo "RU fechado";
+						$status=0;
+						$resposta = 0;
+				}
+			}
+			else{
+			$preco_refeicao= 2; //2 é almoço
+			$id_refeicao = 2;
+		}
+	}
+
+	elseif(($hora_compara >=17 && $hora_compara<= 19) ){
+			if($hora_compara== 19 ){
+				if($minuto_compara > 30 ){
+				//echo " e esse?";
+						echo "RU fechado";
+						$status=0;
+						$resposta = 0;
+				}
+			}
+			else{
+			
+					$preco_refeicao= 3; //3 é janta
+					$id_refeicao = 3; //setando o id refeicao pro jantar
+		}			
+
+	}
+
+	else{
+		echo "RU FECHADO";
+		$status= 0;
+		$resposta = 0;
+		//echo "else funfando";
+	}
+
+	
+
+	if($status == 1){
+
+		 	 if ($id_grupo == 1){
+		 	 	//var_export ($usuario->id_status);
+    		//echo "ta entrando?";
+    		echo "acesso liberado";
+    		$saldo_ok = 1;
+   		 }
+    elseif ($id_grupo == 2){
+    		$preco_cafe 	= 1;
+    		$preco_almoco	= 1;
+    		$preco_jantar 	= 1;
+    		if($preco_refeicao == 1){
+    			$preco= $preco_cafe; 
+    		}
+    		if($preco_refeicao == 2){
+    			$preco= $preco_almoco; 
+    		}
+    		if($preco_refeicao == 3){
+    			$preco= $preco_jantar; 
+    		}
+    		
+
+    		if($carteira->saldo >= $preco){
+    			$saldo_ok = 1;
+    			echo "acesso liberado";
+    		}
+    		
+    }
+    elseif ($id_grupo == 3){
+    	$preco_cafe 	= 2.50;
+    	$preco_almoco 	= 2.50;
+    	$preco_jantar 	= 2.50;    	
+
+    	if($preco_refeicao == 1){
+    			$preco= $preco_cafe; 
+    		}
+    		if($preco_refeicao == 2){
+    			$preco= $preco_almoco; 
+    		}
+    		if($preco_refeicao == 3){
+    			$preco= $preco_jantar; 
+    		}
+    		
+
+    		
+		if($carteira->saldo >= $preco){
+    			echo "acesso liberado";
+    			$saldo_ok = 1;
+    		}	
+    		
+    }
+    elseif ($id_grupo == 4){
+
+    	$preco_cafe 	= 7;
+    	$preco_almoco 	= 13;
+    	$preco_jantar 	= 13;
+
+
+    	if($preco_refeicao == 1){
+    			$preco= $preco_cafe; 
+    		}
+    		if($preco_refeicao == 2){
+    			$preco= $preco_almoco; 
+    		}
+    		if($preco_refeicao == 3){
+    			$preco= $preco_jantar; 
+    		}
+    	if($carteira->saldo >= $preco){
+    			$saldo_ok = 1;
+    			echo "acesso liberado";
+    		}
+    		
+	}
+	/*
+	else{
+		$reposta = 0;
+		echo "saldo insuficiente";
+		echo "entrou aqui?";
+
+	}*/
+
+	}
+
+
+	$resposta = 0;
+	if($saldo_ok  == 1){
+		    echo "teste";
+			$resposta = 1;
+
+	}
+	if($resposta == 1){
+		$pdo= db_connect(); 
+		$saldo = $carteira->saldo - $preco;
+		$sql2 = "UPDATE `carteira_usuario` SET `saldo` ='$saldo' WHERE id_usuario =:idUsario";			 //  $sql = "UPDATE `carteira_usuario` SET `saldo`='$saldo_novo' WHERE id_usuario = '$id_usuario->id_usuario'";
+	 $stmt2=$pdo->prepare($sql2);
+	$stmt2->bindParam(":idUsario", $usuario->id_usuario);
+	$stmt2->execute();
+	
+
+	}	
+	if($resposta == 0){
+
+		echo "acesso nao liberado";
+	}
+
+}); 
 $app->get('/propaganda/lista', function (Request $request, Response $response, array $args) {
 	
 	$pdo = db_connect();
