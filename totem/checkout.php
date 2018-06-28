@@ -1,5 +1,5 @@
 <?php
-require_once '../../cep/vendor/autoload.php';
+require_once '../cep/vendor/autoload.php';
 use JansenFelipe\CepGratis\CepGratis;
 
 define('UNEXPECTED_ERROR_OCCURRED', 6);
@@ -26,7 +26,7 @@ if (isset($_POST['HASH_CARTAO']) && isset($_POST['HASH_USUARIO'])){
 }
 else{
 	$_SESSION['ERROR']=UNEXPECTED_ERROR_OCCURRED;
-	echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/erro.php\">";
+	echo "<META http-equiv=\"refresh\" content=\"0;URL=erro.php\">";
 	exit();
 }
 ?>
@@ -41,6 +41,7 @@ else{
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/jqbtk.css">
 		<link rel="stylesheet" href="css/materialize.min.css" />
+   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
   	 <link rel="stylesheet" href="PaymentFont-1.2.5/css/paymentfont.min.css" />
 		<script	src="js/limitador.js" type="text/javascript"></script>
@@ -54,8 +55,19 @@ else{
 	</script>
 
 	<body class="container">
+	<!--Botão para voltar à página de verificação de dados -->
+<div class="container">
+
+  <div class="fixed-action-btn">
+    <a href="verifica_dados.php"  class="btn-floating btn-large blue darken-4">
+      <iclass="large material-icons" class="material-icons"><i class="material-icons">keyboard_backspace</i>
+    </a>
+  </div>
+
+</div>
+
 		<div class="row">
-			<form action="/PapaFilasRU/totem/checkout.php" method="POST">
+			<form action="checkout.php" method="POST">
 			<div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
 
 				<h2 style="color:#0d47a1">Informações do Cartão</h2>
@@ -118,7 +130,7 @@ else{
 				<input type="tel" class="keyboard form-control keyboard-numpad" id="pagamentoMes"  maxlength = "2" onfocus="limiteCartao()">
                 </div>
 
-				<div class="input-field col s3">
+				<div class="input-field col s4">
 				<h5 style="color:#0d47a1">Ano (AAAA)</h5>
 				<input type="tel" class="keyboard form-control keyboard-numpad"  id="pagamentoAno" maxlength = "4" onfocus="limiteCartao()">
                 </div>
@@ -191,7 +203,7 @@ else{
 				 <div class="row">
                    <div class="col s12 m12 l12">
                  </div>
-                 <a href="\PapaFilasRU\totem\sucesso.php">
+                 <a href="sucesso.php">
                  <button type="submit" class="btn waves-effect blue darken-4" style="width:98%; height: 150px; font-size:40px">Enviar</button>
                   </a>
                 </div>
@@ -263,9 +275,10 @@ else{
 
 				$('#nome').keyboard({
 					layout: [
-						[['Q', 'Q'], ['W', 'W'], ['E', 'E'],['R', 'R'], ['T', 'T'], ['Y', 'Y'], ['U', 'U'], ['I', 'I'], ['O', 'O'], ['P', 'P']],
+						[['Q', 'Q'], ['W', 'W'], ['E', 'E'],['R', 'R'], ['T', 'T'], ['Y', 'Y'], ['U', 'U'], ['I', 'I'], ['O', 'O'], ['P', 'P'], ['del','del']],
 						[['A', 'A'], ['S', 'S'], ['D', 'D'],['F', 'F'], ['G', 'G'], ['H', 'H'], ['J', 'J'], ['K', 'K'], ['L', 'L'], ['Ç', 'Ç']],
-						[['Z', 'Z'], ['X', 'X'], ['C', 'C'],['V', 'V'], ['B', 'B'], ['N', 'N'], ['M', 'M'], ['.', '.']]
+						[['Z', 'Z'], ['X', 'X'], ['C', 'C'],['V', 'V'], ['B', 'B'], ['N', 'N'], ['M', 'M'], ['.', '.']],
+						[['space','space']]
 
 					]
 				});
@@ -333,7 +346,7 @@ else{
 <?php
 function processPayment($buyersInformation, $userInformation){
 
-unset($buyersInformation['brand']);	
+unset($buyersInformation['brand']);
 
 $PurchaseInfo = array_merge($buyersInformation, $userInformation);
 
@@ -360,7 +373,7 @@ function isPaymentOk($paymentStatus){
 	$paymentInformation = $paymentStatus['body'];
 	if ($http_code!=200){
 	  $_SESSION['ERROR']=$paymentInformation;
-	  echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/erro.php\">";
+	  echo "<META http-equiv=\"refresh\" content=\"0;URL=erro.php\">";
 		exit();
 	}
 	else {
@@ -368,27 +381,27 @@ function isPaymentOk($paymentStatus){
 				switch($paymentInformation['STATUS_COMPRA']){
 						case 1:
 							$_SESSION['ERROR']=WAITING_FOR_PAYMENT_CONFIRMATION;
-							echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/erro.php\">";
+							echo "<META http-equiv=\"refresh\" content=\"0;URL=erro.php\">";
 							exit();
 							break;
 				 		case 2:
-							echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/sucesso.php\">";
+							echo "<META http-equiv=\"refresh\" content=\"0;URL=sucesso.php\">";
 							exit();
 							break;
 						case 3:
 							$_SESSION['ERROR']=PAYMENT_DECLINED_CONTACT_YOUR_BANK;
-							echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/erro.php\">";
+							echo "<META http-equiv=\"refresh\" content=\"0;URL=erro.php\">";
 							exit();
 							break;
 						default:
 							$_SESSION['ERROR']=UNEXPECTED_ERROR_OCCURRED;
-							echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/erro.php\">";
+							echo "<META http-equiv=\"refresh\" content=\"0;URL=erro.php\">";
 							exit();
 						}
 				}
 		else{
 				$_SESSION['ERROR']=INCORRECT_SIGNED_FIELD;
-				echo "<META http-equiv=\"refresh\" content=\"0;URL=/PapaFilasRU/totem/erro.php\">";
+				echo "<META http-equiv=\"refresh\" content=\"0;URL=erro.php\">";
 				exit();
 		}
 	}

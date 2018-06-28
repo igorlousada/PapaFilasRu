@@ -2,54 +2,6 @@
 define ('UNEXPECTED_ERROR_OCURRED', 6);
 session_start();
 
-
-
-// print_r($_GET);
-
-if(isset($_GET['id_transacao'])){
-  $id_transacao = $_GET['id_transacao'];
-  updateBalance($id_transacao);
-}
-
-else{
- $_SESSION['ERROR']=UNEXPECTED_ERROR_OCURRED;
-        echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
-         exit();
-}
-
-
-function updateBalance($id_transaction){
-$json_info = array('ID_TRANSACAO' => $id_transaction);
-$json_info = json_encode($json_info);
-$context = stream_context_create(array(
-    'http' => array(
-        'method' => 'PUT',
-        'header' => "Content-Type: application/json \r\n",
-        'content' => $json_info
-    )
-));
-
-$update = file_get_contents("http://35.199.101.182/api/creditos/atualizasaldo", false, $context);
-$update = json_decode($update);
-
-// echo "Todo o código de resposta retornado é: ";
-// print_r($http_response_header);
-// echo "<br>";
-
-$http_response_code = substr($http_response_header[0], 9, 3);
-// echo "O responde code é: ";
-// print_r($http_response_code);
-// echo "<br>";
-
-if (substr($http_response_header[0], 9, 3)!=200){
-	echo "Response Code Failed";
-  $_SESSION['ERROR']=$update;
-  // echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
-  //  exit();
-}
-return $update;
-}
-
 $_SESSION = array();
 session_destroy();
 ?>
@@ -98,8 +50,8 @@ session_destroy();
 <div class="container">
    <div class="row center">
      <div class="col s12 m12">
-       <div class="card-panel blue darken-4 z-depth-2">
-     <a href="pagina-inicial.html">
+       <div class="card-panel box">
+     <a href="index.php">
          <span class="white-text">
        <h2 class="white-text" style="text-align: center"> Retornar</h2>
          </span>
@@ -112,6 +64,6 @@ session_destroy();
 </script>
 </body>
 
-<meta http-equiv="refresh" content="30; url=pagina-inicial.html" />
+<meta http-equiv="refresh" content="30; url=index.php" />
 
 </html>

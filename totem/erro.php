@@ -43,6 +43,7 @@ else{
 $_SESSION = array();
 session_destroy();
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -90,8 +91,8 @@ session_destroy();
     <div class="row">
 
       <div class="col s12 m12">
-        <div class="card-panel blue darken-4 z-depth-2">
-      <a href="pagina-inicial.html">
+        <div class="card-panel box">
+      <a href="index.php">
           <span class="white-text">
       <h2 class="white-text" style="text-align: center"> Retornar</h2>
           </span>
@@ -110,7 +111,7 @@ session_destroy();
 </div>
 </div>
 
-<meta http-equiv="refresh" content="30; url=pagina-inicial.html">
+<meta http-equiv="refresh" content="30; url=index.php">
 
 
 </script>

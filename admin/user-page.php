@@ -10,13 +10,17 @@ if(array_key_exists('Logged', $_SESSION) and $_SESSION['Logged']==true){
     $semestreIngresso = substr($matricula, 2, 2)+1;
     $matriculaBarra = $AnoIngresso.'/'.substr($matricula, 2);
     $historicoCompras = getHistory($matricula);
-    $historicoCompras = filterHistory($historicoCompras);
+    $historicoCompras = formatHistory($historicoCompras);
 }
 else{
     echo "<meta http-equiv=\"refresh\" content=\"0; url=erro.php\" />";
     exit();
   }
 }
+else{
+    echo "<meta http-equiv=\"refresh\" content=\"0; url=login.php\" />";
+    exit();
+  }
 
 
 
@@ -61,61 +65,56 @@ else{
             <!--NavBar-->
       </header>
 
-  <div id="main">
-    <!-- START WRAPPER -->
-    <div class="wrapper">
+      <!-- START MAIN -->
+      <div id="main">
+        <!-- START WRAPPER -->
+        <div class="wrapper">
 
-      <!-- START LEFT SIDEBAR NAV-->
-      <aside id="left-sidebar-nav">
-        <ul id="slide-out" class="side-nav fixed leftside-navigation">
-            <li class="user-details cyan darken-2">
-            <div class="row">
-                <div class="col col s4 m4 l4">
-                    <img src="" alt="" class="circle responsive-img valign profile-image">
+          <!-- START LEFT SIDEBAR NAV-->
+          <aside id="left-sidebar-nav">
+            <ul id="slide-out" class="side-nav fixed leftside-navigation">
+                <li class="user-details cyan darken-2">
+                <div class="row">
+                    <div class="col col s4 m4 l4">
+                        <img src="" alt="" class="circle responsive-img valign profile-image">
+                    </div>
+                    <div class="col col s8 m8 l8">
+                        <ul id="profile-dropdown" class="dropdown-content">
+                            <li><a href="logout.php"><i class="mdi-hardware-keyboard-tab"></i> Logout</a>
+                            </li>
+                            <li><a href="user-register.php"><i class="mdi-content-add"></i>Add</a>
+                            </li>
+                        </ul>
+                        <a class="btn-flat dropdown-button waves-effect waves-light white-text profile-btn" href="#" data-activates="profile-dropdown"><?php echo $_SESSION['username']; ?><i class="mdi-navigation-arrow-drop-down right"></i></a>
+                        <p class="user-roal">Administrator</p>
+                    </div>
                 </div>
-                <div class="col col s8 m8 l8">
-                    <ul id="profile-dropdown" class="dropdown-content">
-                        <li><a href="#"><i class="mdi-hardware-keyboard-tab"></i> Logout</a>
-                        </li>
-                        <li><a href="#"><i class="mdi-content-add"></i>Add</a>
-                        </li>
-                    </ul>
-                    <a class="btn-flat dropdown-button waves-effect waves-light white-text profile-btn" href="#" data-activates="profile-dropdown">John Doe<i class="mdi-navigation-arrow-drop-down right"></i></a>
-                    <p class="user-roal">Administrator</p>
+                </li>
+                <!-- Aqui começa a navbar lateral-->
+                <li class="bold"><a href="inicial.php" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
+                </li>
+
+                <li class="bold"><a href="propaganda.php" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
+                </li>
+
+                <li class="bold"><a href="access_list.php" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
+                </li>
+                <li class="bold"><a href="user_list.php" class="waves-effect waves-cyan"><i class="mdi-action-face-unlock"></i>Lista de usuarios</a>
+                </li>
+
+                <li class="bold"><a href="usuario.php" class="waves-effect waves-cyan"><i class="mdi-action-info-outline"></i>Usuário</a>
+                </li>
+
+                <li class="bold"><a href="cardapio.php" class="waves-effect waves-cyan"><i class="mdi-action-description"></i>Cardápio</a>
+                </li>
+                </ul>
                 </div>
-            </div>
-            </li>
-            <!-- Aqui começa a navbar lateral-->
-
-            <li class="bold"><a href="inicial.html" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
-            </li>
-
-            <li class="bold"><a href="propaganda.html" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
-            </li>
-
-            <li class="bold"><a href="listas.html" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
-            </li>
 
 
-            <li class="bold"><a href="listausuarios.html" class="waves-effect waves-cyan"><i class="mdi-action-face-unlock"></i>Lista de usuarios</a>
-            </li>
+                        <!-- acaba aqui por enquanto-->
+                </aside>
+          <!-- END LEFT SIDEBAR NAV-->
 
-            <li class="bold"><a href="usuario.html" class="waves-effect waves-cyan"><i class="mdi-action-info-outline"></i>Usuário</a>
-            </li>
-
-            <li class="bold"><a href="abrir.html" class="waves-effect waves-cyan"><i class="mdi-action-lock-outline"></i>Abrir/Fechar restaurante(s)</a>
-            </li>
-
-            <li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class="mdi-action-description"></i>Cardápio</a>
-            </li>
-            </ul>
-            </div>
-
-
-
-                    <!-- acaba aqui por enquanto-->
-            </aside>
-      <!-- END LEFT SIDEBAR NAV-->
 
       <!-- //////////////////////////////////////////////////////////////////////////// -->
 
@@ -194,15 +193,15 @@ else{
 
 
                   </div>
-                  <form action="/admin/inserir_creditos.php" method="post">
+                  <form action="inserir_creditos.php" method="post">
                   <input type="hidden" name="matricula" value="<?php echo $matricula;?>">
                   <a href="inserir_creditos.php">
                   <div class="col s6 m6">
                       <div class="card-move-up waves-effect waves-block waves-light">
                       <div class="card green">
                             <div class="card-content white-text center-align">
-                              <p class="card-title"><i class="mdi-content-add"></i>Adicionar</p>
-                              <p>Inserir créditos</p>
+                              <p class="card-title"><i class="mdi-content-add"></i>Adicionar Créditos</p>
+                              <p>Corrigir Transação</p>
                             </div>
                       </div>
                   </div>
@@ -229,6 +228,7 @@ else{
                            <table>
                              <thead>
                                <tr>
+                                 <th data-field="date">ID da Transação</th>
                                  <th data-field="date">Data</th>
                                  <th data-field="hour">Hora</th>
                                  <th data-field="price">Valor da Compra</th>
@@ -276,6 +276,7 @@ else{
 
 
         </div>
+<?
 
 
 
@@ -370,30 +371,39 @@ function getHistory($regnum){
 	return $history;
 }
 
-function filterHistory($history){
-  $transactionApproved = array();
+function formatHistory($history){
+  $formattedHistory = array();
   for($i=0; $i<count($history); $i++){
     $orderLog = $history[$i];
-    if($orderLog['CODIGO_STATUS']==3 || $orderLog['CODIGO_STATUS']==4){
-      $formattedLog = array();
-      $splitTime = explode(' ', $orderLog['DATA_COMPRA']);
-      $formattedLog['DATA']=$splitTime[0];
-      $formattedLog['HORA']=$splitTime[1];
-      $formattedLog['VALOR']=$orderLog['VALOR_COMPRA'];
-      $formattedLog['CODIGO_STATUS']=$orderLog['CODIGO_STATUS'];
-      array_push($transactionApproved, $formattedLog);
+    $formattedLog = array();
+      switch($orderLog['ID_STATUS_PAGAMENTO']){
+        case 1:
+          $formattedLog['STATUS']='Aguardando Pagamento';
+          break;
+      case 2:
+          $formattedLog['STATUS']='Aprovada';
+          break;
+      default:
+      $formattedLog['STATUS']='Rejeitada';
     }
+    $splitTime = explode(' ', $orderLog['DATA_COMPRA']);
+    $formattedLog['DATA']=$splitTime[0];
+    $formattedLog['HORA']=$splitTime[1];
+    $formattedLog['VALOR']=$orderLog['VALOR_COMPRA'];
+    $formattedLog['ID_TRANSACAO']=$orderLog['ID_HISTORICO'];
+    array_push($formattedHistory, $formattedLog);
   }
-    return $transactionApproved;
+    return $formattedHistory;
 }
 
 function showHistory($historyClean){
   for($i=0; $i<count($historyClean); $i++){
     $register = $historyClean[$i];
-    echo "<tr><td>".$register['DATA']."</td>";
+    echo "<tr><td>".$register['ID_TRANSACAO']."</td>";
+    echo "<td>".$register['DATA']."</td>";
     echo "<td>".$register['HORA']."</td>";
     echo "<td>".$register['VALOR']."</td>";
-    echo "<td>".$register['DATA']."</td></tr>";
+    echo "<td>".$register['STATUS']."</td></tr>";
   }
   echo "</tbody>";
 }

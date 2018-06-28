@@ -1,35 +1,25 @@
 <?php
 
 session_start();
-
 if(!(array_key_exists('Logged', $_SESSION) and $_SESSION['Logged']==true)){
-   echo "<meta http-equiv=\"refresh\" content=\"0; url=login.php\" />";
+    echo "<meta http-equiv=\"refresh\" content=\"0; url=login.php\" />";
+    exit();
+  }
+if(!empty($_POST['DIA']) and !empty($_POST['MES']) and !empty($_POST['ANO'])){
+$data = setDate($_POST['DIA'], $_POST['MES'], $_POST['ANO']);
+$HistoricoAcessos = getDailyHistory($data);
+}
+else{
+  echo "<meta http-equiv=\"refresh\" content=\"0; url=access_list.php\" />";
   exit();
-}
-if (!empty($_GET['resetStats']) and $_GET['resetStats']==1){
-  resetStats();
-  unset($_GET);
-  echo '<script type="text/javascript">';
-  echo 'setTimeout(function () { swal({
-  title: "Sucesso!",
-  text: "As estatísticas foram zeradas com sucesso!",
-  type: "success"
-},
-function(){
-    window.location.href = \'inicial.php\';
-});';
-  echo '}, 1000);</script>';
-}
-
-function resetStats(){
-  $api_address = 'http://www.dandico.com.br/api/refeitorio/inicializa';
-  $request = file_get_contents($api_address);
 }
 ?>
 
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
+
+
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -38,36 +28,64 @@ function resetStats(){
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="description" content="Materialize is a Material Design Admin Template,It's modern, responsive and based on Material Design by Google. ">
   <meta name="keywords" content="materialize, admin template, dashboard template, flat admin template, responsive admin template,">
-  <title>Página Inicial</title>
+  <title>Lista De Acessos</title>
+
+  <!-- Favicons-->
+  <link rel="icon" href="images/favicon/favicon-32x32.png" sizes="32x32">
+  <!-- Favicons-->
+  <link rel="apple-touch-icon-precomposed" href="images/favicon/apple-touch-icon-152x152.png">
+  <!-- For iPhone -->
+  <meta name="msapplication-TileColor" content="#00bcd4">
+  <meta name="msapplication-TileImage" content="images/favicon/mstile-144x144.png">
+  <!-- For Windows Phone -->
 
 
   <!-- CORE CSS-->
+
   <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection">
   <link href="css/style.min.css" type="text/css" rel="stylesheet" media="screen,projection">
   <!-- Custome CSS-->
   <link href="css/custom/custom.min.css" type="text/css" rel="stylesheet" media="screen,projection">
 
+
+
+
   <!-- INCLUDED PLUGIN CSS ON THIS PAGE -->
   <link href="js/plugins/prism/prism.css" type="text/css" rel="stylesheet" media="screen,projection">
   <link href="js/plugins/perfect-scrollbar/perfect-scrollbar.css" type="text/css" rel="stylesheet" media="screen,projection">
+  <link href="js/plugins/data-tables/css/jquery.dataTables.min.css" type="text/css" rel="stylesheet" media="screen,projection">
   <link href="js/plugins/chartist-js/chartist.min.css" type="text/css" rel="stylesheet" media="screen,projection">
   <link rel="stylesheet" type="text/css" href="js\plugins\sweetalert\sweetalert.css">
   <script type="text/javascript" src="js\plugins\sweetalert\sweetalert.min.js"></script>
 </head>
 
 <body>
+  <!-- Start Page Loading -->
+  <div id="loader-wrapper">
+      <div id="loader"></div>
+      <div class="loader-section section-left"></div>
+      <div class="loader-section section-right"></div>
+  </div>
+  <!-- End Page Loading -->
 
-  <header id="header" class="page-topbar">
-        <!--NavBar-->
-        <div class="navbar-fixed">
-            <nav>
-            <div class="nav-wrapper blue darken-4">
-                <h4 class="brand-logo">Administrador</h4>
-            </div>
-          </nav>
-        </div>
-        <!--NavBar-->
-  </header>
+  <!-- //////////////////////////////////////////////////////////////////////////// -->
+
+  <!-- START HEADER -->
+
+          <header id="header" class="page-topbar">
+                <!--NavBar-->
+                <div class="navbar-fixed">
+                    <nav>
+                    <div class="nav-wrapper blue darken-4">
+                        <h4 class="brand-logo">Administrador</h4>
+                    </div>
+                  </nav>
+                </div>
+                <!--NavBar-->
+          </header>
+  <!-- END HEADER -->
+
+  <!-- //////////////////////////////////////////////////////////////////////////// -->
 
   <!-- START MAIN -->
   <div id="main">
@@ -134,9 +152,9 @@ function resetStats(){
           <div class="container">
             <div class="row">
               <div class="col s12 m12 l12">
-                <h4 class="breadcrumbs-title">Seja Bem-Vindo!</h4>
+                <h5 class="breadcrumbs-title">Lista Usuários</h5>
                 <ol class="breadcrumbs">
-                    <li><a href="inicial.html">Página Inicial</a></li>
+                    <li><a href="index.html">Página Inicial</a></li>
                 </ol>
               </div>
             </div>
@@ -148,129 +166,97 @@ function resetStats(){
         <!--start container-->
         <div class="container">
           <div class="section">
-            <div>
-              <!-- ESCREVA AQUI SUAS DIVS-->
 
 
-                  <!--Cards iniciais -->
-                  <div class="row">
-                  <div class="col s12 m4">
-                    <div class="card small">
-                      <div class="card-image">
-                        <img src="images/cadeado.png">
-                      </div>
-                      <div class="card-content black-text">
-                      <p class="black-text">Acesse a página para abrir/fechar restaurantes</p>
-                    </div>
-                      <div class="card-action">
-                        <a href="inicial.php?resetStats=1">Abrir/Fechar restaurante</a>
-                      </div>
-                    </div>
-                  </div>
+            <div class="divider"></div>
 
-                  <div class="col s12 m4">
-                    <div class="card small">
-                      <div class="card-image">
-                        <img src="images/olho.png">
-                      </div>
-                      <div class="card-content black-text">
-                      <p class="black-text">Acesse o gerenciamento de propagandas</p>
-                    </div>
-                      <div class="card-action">
-                        <a href="propaganda.php">Gerenciar propagandas</a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col s12 m4">
-                    <div class="card small">
-                      <div class="card-image">
-                        <img src="images/lista.png">
-                      </div>
-                      <div class="card-content black-text">
-                      <p class="black-text">Confira a Lista de Usuários</p>
-                    </div>
-                      <div class="card-action">
-                        <a href="user_list.php">Usuários</a>
-                      </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-
-
-
-              <!-- Cards iniciais-->
-              <!--Cards iniciais -->
-              <br>
-              <br>
-
+            <!--DataTables example-->
+            <div id="table-datatables">
+              <h4 class="header">Lista Usuários</h4>
               <div class="row">
-              <div class="col s12 m4">
-                <div class="card small">
-                  <div class="card-image">
-                    <img src="images/bluelist.png">
-                  </div>
-                  <div class="card-content black-text">
-                  <p class="black-text">Confira a Lista de Acessos</p>
-                </div>
-                  <div class="card-action">
-                    <a href="access_list.php">Lista de Acessos</a>
-                  </div>
-                </div>
-              </div>
 
-              <div class="col s12 m4">
-                <div class="card small">
-                  <div class="card-image">
-                    <img src="images/user.png">
-                  </div>
-                  <div class="card-content black-text">
-                  <p class="black-text">Gerencie os Usuários</p>
-                </div>
-                  <div class="card-action">
-                    <a href="usuario.php">Usuários Comuns</a>
-                    <a href="user-register.php">Adicionar Administrador</a>
-                  </div>
-                </div>
-              </div>
+                <div class="col s12">
+                  <table id="data-table-simple" class="responsive-table display" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID Histórico</th>
+                            <th>ID Usuário</th>
+                            <th>Matrícula</th>
+                            <th>Refeitório</th>
+                            <th>Refeição</th>
+                            <th>Hora de Entrada</th>
+                            <th>ID do Grupo</th>
+                        </tr>
+                    </thead>
 
-              <div class="col s12 m4">
-                <div class="card small">
-                  <div class="card-image">
-                    <img src="images/food.png">
-                  </div>
-                  <div class="card-content black-text">
-                  <p class="black-text">Informar o Cardápio do Dia</p>
-                </div>
-                  <div class="card-action">
-                    <a href="cardapio.php">Cardápio</a>
-                  </div>
+                    <tfoot>
+                        <tr>
+                          <th>ID Histórico</th>
+                          <th>ID Usuário</th>
+                          <th>Matrícula</th>
+                          <th>Refeitório</th>
+                          <th>Refeição</th>
+                          <th>Hora de Entrada</th>
+                          <th>ID do Grupo</th>
+
+                        </tr>
+                    </tfoot>
+
+                    <tbody>
+                      <?php
+                      for ($i=0; $i<count($HistoricoAcessos); $i++){
+                        $Acesso = $HistoricoAcessos[$i];
+                        switch($Acesso['id_refeicao']){
+                          case 1:
+                            $Acesso['refeicao']="Desjejum";
+                            break;
+                          case 2:
+                            $Acesso['refeicao']="Almoço";
+                            break;
+                          default:
+                            $Acesso['refeicao']="Jantar";
+                        }
+                        echo "<tr>";
+                        echo "<th>".$Acesso['id_historico']."</th>";
+                        echo "<th>".$Acesso['id_usuario']."</th>";
+                        echo "<th>".$Acesso['matricula']."</th>";
+                        echo "<th>".$Acesso['id_refeitorio']."</th>";
+                        echo "<th>".$Acesso['refeicao']."</th>";
+                        echo "<th>".$Acesso['hora_entrada']."</th>";
+                        echo "<th>".$Acesso['id_grupo']."</th>";
+                        echo "</tr>";
+                      }
+                      ?>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
+            <br>
+            <div class="divider"></div>
 
+          </div>
 
-
-
-          <!-- Cards iniciais-->
-
-
-              <!--Card tempo de fila  -->
-
-              <!-- Card tempo de fila-->
         </div>
         <!--end container-->
+
       </section>
       <!-- END CONTENT -->
-    </div>
-  </div>
 
+      <!-- //////////////////////////////////////////////////////////////////////////// -->
+
+
+    </div>
+    <!-- END WRAPPER -->
+
+  </div>
+  <!-- END MAIN -->
 
 
 
   <!-- //////////////////////////////////////////////////////////////////////////// -->
+
+
 
 
 
@@ -279,44 +265,59 @@ function resetStats(){
     ================================================ -->
 
     <!-- jQuery Library -->
-    <!-- jQuery Library -->
     <script type="text/javascript" src="js/plugins/jquery-1.11.2.min.js"></script>
     <!--materialize js-->
     <script type="text/javascript" src="js/materialize.min.js"></script>
+    <!--prism-->
+    <script type="text/javascript" src="js/plugins/prism/prism.js"></script>
     <!--scrollbar-->
     <script type="text/javascript" src="js/plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-
-
+    <!-- data-tables -->
+    <script type="text/javascript" src="js/plugins/data-tables/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="js/plugins/data-tables/data-tables-script.js"></script>
     <!-- chartist -->
     <script type="text/javascript" src="js/plugins/chartist-js/chartist.min.js"></script>
-
-    <!-- chartjs -->
-    <script type="text/javascript" src="js/plugins/chartjs/chart.min.js"></script>
-    <script type="text/javascript" src="js/plugins/chartjs/chart-script.js"></script>
-
-    <!-- sparkline -->
-    <script type="text/javascript" src="js/plugins/sparkline/jquery.sparkline.min.js"></script>
-    <script type="text/javascript" src="js/plugins/sparkline/sparkline-script.js"></script>
-
-    <!-- google map api -->
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAZnaZBXLqNBRXjd-82km_NO7GUItyKek"></script>
-
-    <!--jvectormap-->
-    <script type="text/javascript" src="js/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>
-    <script type="text/javascript" src="js/plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
-    <script type="text/javascript" src="js/plugins/jvectormap/vectormap-script.js"></script>
-
-    <!--google map-->
-    <script type="text/javascript" src="js/plugins/google-map/google-map-script.js"></script>
-
 
     <!--plugins.js - Some Specific JS codes for Plugin Settings-->
     <script type="text/javascript" src="js/plugins.min.js"></script>
     <!--custom-script.js - Add your own theme custom JS-->
     <script type="text/javascript" src="js/custom-script.js"></script>
-
+    <script type="text/javascript">
+        /*Show entries on click hide*/
+        $(document).ready(function(){
+            $(".dropdown-content.select-dropdown li").on( "click", function() {
+                var that = this;
+                setTimeout(function(){
+                if($(that).parent().hasClass('active')){
+                        $(that).parent().removeClass('active');
+                        $(that).parent().hide();
+                }
+                },100);
+            });
+        });
     </script>
-
 </body>
 
 </html>
+<?php
+function getDailyHistory($date){
+  $api_adress = "http://35.199.101.182/api/admin/ListaAcesso/";
+  $api_date_adress = $api_adress.$date;
+  $request = file_get_contents($api_date_adress);
+  $response = json_decode($request, true);
+  $responseCode = substr($http_response_header[0], 9, 3);
+  if($responseCode==206){
+    echo "<meta http-equiv=\"refresh\" content=\"0; url=log_error.php\" />";
+    exit();
+  }
+  else{
+    return $response;
+  }
+
+}
+
+function setDate($day, $month, $year){
+  $date=$year.'-'.$month.'-'.$day;
+  return $date;
+}
+?>

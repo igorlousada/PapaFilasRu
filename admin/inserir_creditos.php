@@ -3,17 +3,29 @@
 session_start();
 
 if (array_key_exists('Logged', $_SESSION) and $_SESSION['Logged']==true){
-  if(array_key_exists('creditos', $_POST) and !empty($_POST['creditos'])){
-    if(verifyAuthorization($_POST['creditos'], $_SESSION['matricula'])){
-        putCredits($_POST['creditos'], $_SESSION['matricula']);
+  if(array_key_exists('ID_TRANSACAO', $_POST) and !empty($_POST['ID_TRANSACAO'])){
+    if(CheckAndCorrectPurchase($_POST['ID_TRANSACAO'])){
+      echo '<script type="text/javascript">';
+      echo 'setTimeout(function () { swal({
+      title: "Transação Corrida com Sucesso!",
+      text: "Créditos inseridos com sucesso.",
+      type: "success"
+    },
+    function(){
+        window.location.href = \'inicial.php\';
+});';
+      echo '}, 1000);</script>';
     }
     else{
-      $mensagem = "Erro! O usuário não pode acumular mais de R$ 100 em créditos";
+      echo '<script type="text/javascript">';
+      echo 'setTimeout(function () { swal("Erro!","Impossível inserir créditos! Os Créditos dessa Transação já foram inseridos");';
+      echo '}, 1000);</script>';
     }
+
   }
 }
 else{
-  echo "<meta http-equiv=\"refresh\" content=\"0; url=/admin/erro.php\" />";
+  echo "<meta http-equiv=\"refresh\" content=\"0; url=login.php\" />";
   exit();
 }
 
@@ -49,6 +61,8 @@ else{
   <link href="js/plugins/prism/prism.css" type="text/css" rel="stylesheet" media="screen,projection">
   <link href="js/plugins/perfect-scrollbar/perfect-scrollbar.css" type="text/css" rel="stylesheet" media="screen,projection">
   <link href="js/plugins/chartist-js/chartist.min.css" type="text/css" rel="stylesheet" media="screen,projection">
+  <link rel="stylesheet" type="text/css" href="js\plugins\sweetalert\sweetalert.css">
+  <script type="text/javascript" src="js\plugins\sweetalert\sweetalert.min.js"></script>
 
 </head>
 <body>
@@ -65,58 +79,55 @@ else{
           <!--NavBar-->
     </header>
 
-  <!-- START MAIN -->
-  <div id="main">
-    <!-- START WRAPPER -->
-    <div class="wrapper">
+    <!-- START MAIN -->
+    <div id="main">
+      <!-- START WRAPPER -->
+      <div class="wrapper">
 
-      <!-- START LEFT SIDEBAR NAV-->
-         <aside id="left-sidebar-nav">
-        <ul id="slide-out" class="side-nav fixed leftside-navigation">
-            <li class="user-details cyan darken-2">
-            <div class="row">
-                <div class="col col s4 m4 l4">
-                    <img src="" alt="" class="circle responsive-img valign profile-image">
-                </div>
-                <div class="col col s8 m8 l8">
-                    <ul id="profile-dropdown" class="dropdown-content">
-                        <li><a href="#"><i class="mdi-hardware-keyboard-tab"></i> Logout</a>
-                        </li>
-                        <li><a href="#"><i class="mdi-content-add"></i>Add</a>
-                        </li>
-                    </ul>
-                    <a class="btn-flat dropdown-button waves-effect waves-light white-text profile-btn" href="#" data-activates="profile-dropdown">John Doe<i class="mdi-navigation-arrow-drop-down right"></i></a>
-                    <p class="user-roal">Administrator</p>
-                </div>
-            </div>
-            </li>
-            <!-- Aqui começa a navbar lateral-->
-            <li class="bold"><a href="inicial.html" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
-            </li>
+        <!-- START LEFT SIDEBAR NAV-->
+        <aside id="left-sidebar-nav">
+          <ul id="slide-out" class="side-nav fixed leftside-navigation">
+              <li class="user-details cyan darken-2">
+              <div class="row">
+                  <div class="col col s4 m4 l4">
+                      <img src="" alt="" class="circle responsive-img valign profile-image">
+                  </div>
+                  <div class="col col s8 m8 l8">
+                      <ul id="profile-dropdown" class="dropdown-content">
+                          <li><a href="logout.php"><i class="mdi-hardware-keyboard-tab"></i> Logout</a>
+                          </li>
+                          <li><a href="user-register.php"><i class="mdi-content-add"></i>Add</a>
+                          </li>
+                      </ul>
+                      <a class="btn-flat dropdown-button waves-effect waves-light white-text profile-btn" href="#" data-activates="profile-dropdown"><?php echo $_SESSION['username']; ?><i class="mdi-navigation-arrow-drop-down right"></i></a>
+                      <p class="user-roal">Administrator</p>
+                  </div>
+              </div>
+              </li>
+              <!-- Aqui começa a navbar lateral-->
+              <li class="bold"><a href="inicial.php" class="waves-effect waves-cyan"><i class="mdi-action-dashboard"></i> Página Inicial</a>
+              </li>
 
-            <li class="bold"><a href="propaganda.html" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
-            </li>
+              <li class="bold"><a href="propaganda.php" class="waves-effect waves-cyan"><i class="mdi-action-visibility"></i>Propagandas</a>
+              </li>
 
-            <li class="bold"><a href="listas.html" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
-            </li>
+              <li class="bold"><a href="access_list.php" class="waves-effect waves-cyan"><i class=" mdi-av-recent-actors"></i>Lista de acessos</a>
+              </li>
+              <li class="bold"><a href="user_list.php" class="waves-effect waves-cyan"><i class="mdi-action-face-unlock"></i>Lista de usuarios</a>
+              </li>
+
+              <li class="bold"><a href="usuario.php" class="waves-effect waves-cyan"><i class="mdi-action-info-outline"></i>Usuário</a>
+              </li>
+
+              <li class="bold"><a href="cardapio.php" class="waves-effect waves-cyan"><i class="mdi-action-description"></i>Cardápio</a>
+              </li>
+              </ul>
+              </div>
 
 
-            <li class="bold"><a href="listausuarios.html" class="waves-effect waves-cyan"><i class="mdi-action-face-unlock"></i>Lista de usuarios</a>
-            </li>
-
-            <li class="bold"><a href="usuario.html" class="waves-effect waves-cyan"><i class="mdi-action-info-outline"></i>Usuário</a>
-            </li>
-
-            <li class="bold"><a href="abrir.html" class="waves-effect waves-cyan"><i class="mdi-action-lock-outline"></i>Abrir/Fechar restaurante(s)</a>
-            </li>
-
-            <li class="bold"><a href="app-email.html" class="waves-effect waves-cyan"><i class="mdi-action-description"></i>Cardápio</a>
-            </li>
-            </ul>
-            </div>
-
-                    <!-- Fim da navbar lateral-->
-            </aside>
+                      <!-- acaba aqui por enquanto-->
+              </aside>
+        <!-- END LEFT SIDEBAR NAV-->
 
       <!-- START CONTENT -->
       <section id="content">
@@ -135,7 +146,7 @@ else{
                 echo "<br>";
             }
             ?>
-            <p class="caption">Digite a quantidade de créditos desejada</p>
+            <p class="caption">Digite o ID da Transação a ser corrigida</p>
             <div class="divider"></div>
           </div>
 		  <div class="row">
@@ -143,9 +154,9 @@ else{
           <div class="row">
 
           <div class="input-field col s6">
-             <input id="creditos" type="number" class="validate" name="creditos">
+             <input id="ID_TRANSACAO" type="number" class="validate" name="ID_TRANSACAO">
 
-             <label for="creditos">Créditos</label>
+             <label for="ID_TRANSACAO">ID da Transação</label>
          </div>
           </div>
       </div>
@@ -190,19 +201,15 @@ else{
 </html>
 
 <?php
-function verifyAuthorization($credits, $regnum){
-  $api_adress = 'http://35.199.101.182/api/usuarios/';
-  $user_api_adress = $api_adress.$regnum;
+function CheckAndCorrectPurchase($transactionID){
+  $api_adress = 'http://35.199.101.182/api/admin/CorrigeTransacao/';
+  $user_api_adress = $api_adress.$transactionID;
   $user = json_decode(file_get_contents($user_api_adress), true);
-   if ($user['SALDO']+$credits>100){
+  $responseCode = substr($http_response_header[0], 9, 3);
+   if ($responseCode==206){
     return false;
   }
   else{
     return true;
   }
-}
-
-
-function putCredits($credits, $regnum){
-  return true;
 }

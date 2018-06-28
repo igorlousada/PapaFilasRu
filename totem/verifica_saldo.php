@@ -10,7 +10,7 @@ if (isset($_POST['NumberLote'])){
 
 		if (!UserExists($matricula)){
 				$_SESSION['ERROR']=USER_NOT_FOUND_IN_CHECK;
-				echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+				echo "<META http-equiv=\"refresh\" content=\"1;URL=erro.php\">";
 				exit();
 		}
     else{
@@ -20,7 +20,7 @@ if (isset($_POST['NumberLote'])){
 }
 else{
   $_SESSION['ERROR']=UNEXPECTED_ERROR_OCURRED;
-  echo "<META http-equiv=\"refresh\" content=\"1;URL=/PapaFilasRU/totem/erro.php\">";
+  echo "<META http-equiv=\"refresh\" content=\"1;URL=erro.php\">";
 
 }
 
@@ -52,6 +52,7 @@ function getUser($regnum){
 
 ?>
 
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -68,62 +69,48 @@ function getUser($regnum){
 <link rel="stylesheet" href="css/custom.css" />
 <link rel="stylesheet" href="css/style.css" />
 
+
 </head>
 
 <body>
 <div class="container">
 
   <div class="fixed-action-btn">
-    <a  href="pagina-inicial.html"  class="btn-floating btn-large blue darken-4">
-      <iclass="large material-icons" class="material-icons"><i class="material-icons">keyboard_backspace</i>
+    <a  href="index.php"  class="btn-floating btn-large blue darken-4">
+     <i class="  material-icons" align="center">keyboard_backspace</i>
     </a>
-    <ul>
-      <li><a class="btn-floating red"><i class="material-icons">insert_chart</i></a></li>
-      <li><a class="btn-floating yellow darken-1"><i class="material-icons">format_quote</i></a></li>
-      <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
-      <li><a class="btn-floating blue"><i class="material-icons">attach_file</i></a></li>
-</ul>
   </div>
 
 </div>
 
-<!-- Mensagem inicial-->
-<div class="section no-pad-bot" id="index-banner">
-  <div class="container">
-  <h5 class="header blue-text text-darken-4"> <?php echo "Olá, $matricula"; ?></h5>
-<br />
-<br />
-<br />
-<br />
-<br />
-<div class=" container">
-    <div class="row center">
-      <h3 class="header blue-text text-darken-4"> <i class=" small material-icons">autorenew
-</i>Conta RU</h3>
+<br><br><br><br><br><br>
+<!-- Card com saldo atual-->
+
+<div class="container">
+    <div class="row">
+        <div class="col s12 m12 l12">
+            <div class="card-panel box z-depth-3">
+                <span class="text-align center"><h1 class="header white-text">Saldo Disponível:</h1></span>
+                <span class="text-align center">
+                <h5 class=" header blue-text" style="text-align: center"> <?php echo "$matricula"; ?></h5>
+                <br><br>
+                <h3 class="header white-text" style="text-align: center"><?php echo "Seu saldo é de R$" .number_format($saldo, 2, ',', '.')."<br>"; ?></h3>
+                </span>
+
+            </div>
+
+        </div>
+
+
     </div>
-  </div>
-  <div class="darken-4 blue container">
-    <div class="row center">
-<br />
-<br />
-<h1 class="header white-text">Saldo Disponível:</h1>
-</div>
-<h3 class="header white-text"> <i class="  small material-icons">assignment_turned_in
-</i><?php echo "Seu saldo é de R$" .number_format($saldo, 2, ',', '.')."<br>"; ?></h3>
-<br />
-<br />
-<br />
-<br />
-<br />
-</div>
-</div>
 
+	<br><br><br><br><br><br>
 
 </div>
 
 
 
-</script>
+
 </body>
 
 </html>

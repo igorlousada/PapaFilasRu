@@ -1,31 +1,14 @@
-<?php
+ <?php
 
 session_start();
-
-$error = false;
-
-if(array_key_exists('Logged', $_SESSION) and $_SESSION['Logged']==true){
-  if(isset($_POST['matricula'])){
-    if (isUser($_POST['matricula'])){
-      $_SESSION['matricula']=$_POST['matricula'];
-      echo "<meta http-equiv=\"refresh\" content=\"0; url=user-page.php\" />";
-      exit();
-    }
-    else{
-      $error = true;
-    }
+if(!(array_key_exists('Logged', $_SESSION) and $_SESSION['Logged']==true)){
+    echo "<meta http-equiv=\"refresh\" content=\"0; url=login.php\" />";
+    exit();
   }
-}
-else{
-  echo "<meta http-equiv=\"refresh\" content=\"0; url=erro.php\" />";
-  exit();
-}
-
-  ?>
-
+?>
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -34,7 +17,7 @@ else{
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="description" content="Materialize is a Material Design Admin Template,It's modern, responsive and based on Material Design by Google. ">
   <meta name="keywords" content="materialize, admin template, dashboard template, flat admin template, responsive admin template,">
-  <title>Menu usuário</title>
+  <title>Listas de acesso</title>
 
   <!-- CORE CSS-->
   <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection">
@@ -111,7 +94,6 @@ else{
                         <!-- acaba aqui por enquanto-->
                 </aside>
           <!-- END LEFT SIDEBAR NAV-->
-
       <!-- //////////////////////////////////////////////////////////////////////////// -->
 
       <!-- START CONTENT -->
@@ -127,10 +109,10 @@ else{
           <div class="container">
             <div class="row">
               <div class="col s12 m12 l12">
-                <h4 class="breadcrumbs-title">Perfil</h4>
+
                 <ol class="breadcrumbs">
                     <li><a href="inicial.html">Página Inicial</a></li>
-                    <li class="active">Página do usuário</li>
+                    <li class="active">Listas de acessos</li>
                 </ol>
               </div>
             </div>
@@ -141,127 +123,121 @@ else{
 
         <!--start container-->
         <div class="container">
-            <div class="section">
+        <div class="section">
+        <div class="row">
+
+        <!-- Início do primeiro card-->
+
+    <div class="col s12 m12 l12">
+    <div class="card-panel white">
+        <h5>Lista Diária</h5>
+        <div class="divider"></div>
+        <div class="container">
+          <form action="user_logs.php" method="post">
+              <select name="DIA" class="browser-default">
+              <option value="" disabled selected>Dia</option>
+               <option value="01">1</option>
+                <option value="02">2</option>
+                   <option value="03">3</option>
+                    <option value="04">4</option>
+                     <option value="05">5</option>
+                      <option value="06">6</option>
+                       <option value="07">7</option>
+                        <option value="08">8</option>
+                         <option value="09">9</option>
+                          <option value="10">10</option>
+                           <option value="11">11</option>
+                            <option value="12">12</option>
+                             <option value="13">13</option>
+                              <option value="14">14</option>
+                               <option value="15">15</option>
+                                <option value="16">16</option>
+                                 <option value="17">17</option>
+                                  <option value="18">18</option>
+                                   <option value="19">19</option>
+                                    <option value="20">20</option>
+                                     <option value="21">21</option>
+                                      <option value="22">22</option>
+                                       <option value="23">23</option>
+                                        <option value="24">24</option>
+                                         <option value="25">25</option>
+                                          <option value="26">26</option>
+                                           <option value="27">27</option>
+                                            <option value="28">28</option>
+                                             <option value="29">29</option>
+                                              <option value="30">30</option>
+                                               <option value="31">31</option>
+
+               </select>
+        </div>
+        <br><br>
+        <div class="container">
+              <select name="MES" class="browser-default">
+              <option value="" disabled selected>Mês</option>
+               <option value="01">Janeiro</option>
+                <option value="02">Fevereiro</option>
+                   <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                     <option value="05">Maio</option>
+                      <option value="06">Junho</option>
+                       <option value="07">Julho</option>
+                        <option value="08">Agosto</option>
+                         <option value="09">Setembro</option>
+                          <option  value="10">Outubro</option>
+                           <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+               </select>
+        </div>
+        <br><br>
+        <div class="container">
+              <select name="ANO" class="browser-default">
+              <option value="" disabled selected>Ano</option>
               <?php
-              if ($error == true){
-                echo "<h4><p style=\"color:red\"> Erro! A matrícula informada não consta no sistema </h4></p>";
-                echo "<br>";
+              for ($i=0; $i<=15; $i++){
+                $ano = 2018+$i;
+                echo "<option name=\"ANO\" value=\"$ano\">$ano</option>";
               }
               ?>
-              <h4>
-              <p class="caption">O menu do usuário é uma página que agrega todas as funções que são voltadas para um usuário específico.
-              São elas: Lista de Transações, carteira atual, remover usuário, inserir créditos e informações gerais.</p>
-              <div class="divider"></div>
-              </div>
-                <!-- ESCREVA AQUI SUAS DIVS-->
-
-                    <p class="caption">Insira a matrícula abaixo: </p>
-
-                <div class="row">
-                    <form action="usuario.php" method="POST">
-                      <div class="input-field col s6">
-                        <input value="" name="matricula" id="matricula" type="text" class="validate">
-                        <label class="active" for="matricula">Matrícula</label>
-                      </div>
-                    </div>
-
-                    <!-- Botão que deve verificar a matrícula e levar ao menu usuário-->
-                     <a href="user-page.php"><button type="submit" class="waves-effect waves-light btn-large blue darken-4">Entrar</button></a>
-                     </form>
+               </select>
+               <div class="row">
+               <br>
+               <button type="submit" formmethod="POST" class="waves-effect waves-light btn-large blue darken-4">Mostrar</button>
 
 
 
 
-
-
-
-               <!-- ESCREVA AQUI SUAS DIVS-->
-
-
-        </div>
-        <!--end container-->
-      </section>
-      <!-- END CONTENT -->
     </div>
-  </div>
+    </div>
+    </div>
+    </div>
+             </form>
 
-
-
-
-  <!-- //////////////////////////////////////////////////////////////////////////// -->
-
-
+    <!-- Fim do primeiro card-->
+    <br><br>
+    </div>
+    </div>
+    </div>
 
     <!-- ================================================
     Scripts
     ================================================ -->
 
     <!-- jQuery Library -->
-    <!-- jQuery Library -->
     <script type="text/javascript" src="js/plugins/jquery-1.11.2.min.js"></script>
     <!--materialize js-->
     <script type="text/javascript" src="js/materialize.min.js"></script>
+    <!--prism
+    <script type="text/javascript" src="js/prism/prism.js"></script>-->
     <!--scrollbar-->
     <script type="text/javascript" src="js/plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-
-
     <!-- chartist -->
     <script type="text/javascript" src="js/plugins/chartist-js/chartist.min.js"></script>
-
-    <!-- chartjs -->
-    <script type="text/javascript" src="js/plugins/chartjs/chart.min.js"></script>
-    <script type="text/javascript" src="js/plugins/chartjs/chart-script.js"></script>
-
-    <!-- sparkline -->
-    <script type="text/javascript" src="js/plugins/sparkline/jquery.sparkline.min.js"></script>
-    <script type="text/javascript" src="js/plugins/sparkline/sparkline-script.js"></script>
-
-    <!-- google map api -->
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAZnaZBXLqNBRXjd-82km_NO7GUItyKek"></script>
-
-    <!--jvectormap-->
-    <script type="text/javascript" src="js/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>
-    <script type="text/javascript" src="js/plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
-    <script type="text/javascript" src="js/plugins/jvectormap/vectormap-script.js"></script>
-
-    <!--google map-->
-    <script type="text/javascript" src="js/plugins/google-map/google-map-script.js"></script>
-
 
     <!--plugins.js - Some Specific JS codes for Plugin Settings-->
     <script type="text/javascript" src="js/plugins.min.js"></script>
     <!--custom-script.js - Add your own theme custom JS-->
     <script type="text/javascript" src="js/custom-script.js"></script>
 
-    <script>
-    $(document).ready(function() {
-    Materialize.updateTextFields();
-    });
-
-    </script>
-
-
-
-
-    </script>
-
 </body>
 
 </html>
-
-<?php
-function isUser ($regnum){
-  $api_adress = 'http://35.199.101.182/api/usuarios/';
-  $user_api_adress = $api_adress.$regnum;
-
-  $response_header = get_headers($user_api_adress);
-  $response_code =  substr($response_header[0], 9, 3);
-
-  if ($response_code==200){
-      return true;
-  }
-  else{
-      return false;
-  }
-}
-?>

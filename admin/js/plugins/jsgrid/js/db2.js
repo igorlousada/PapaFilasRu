@@ -4,15 +4,15 @@
 
         loadData: function(filter) {
             return $.grep(this.clients, function(client) {
-                return (!filter.ID_USUARIO || client.ID_USUARIO === filter.ID_USUARIO)
-				    && (!filter.NOME_USUARIO || client.NOME_USUARIO.indexOf(filter.NOME_USUARIO) > -1)
-                    && (!filter.MATRICULA || client.MATRICULA === filter.MATRICULA)
+                return (!filter.ID_Usuário || client.ID_Usuário === filter.ID_Usuário)
+				    && (!filter.Nome || client.Nome.indexOf(filter.Nome) > -1)
+                    && (!filter.Matrícula || client.Matrícula === filter.Matrícula)
 					&& (!filter.CPF || client.CPF === filter.CPF)
-                    && (!filter.EMAIL || client.EMAIL.indexOf(filter.EMAIL) > -1)
-					&& (!filter.ID_GRUPO || client.ID_GRUPO === filter.ID_GRUPO)
-					&& (!filter.ID_STATUS || client.ID_STATUS === filter.ID_STATUS)
+                    && (!filter.Email || client.Email.indexOf(filter.Email) > -1)
+					&& (!filter.Grupo || client.Grupo === filter.Grupo)
+					&& (!filter.Status || client.Grupo === filter.Status)
 				    && (filter.Married === undefined || client.Married === filter.Married);
-
+                    
             });
         },
 
@@ -42,25 +42,15 @@
         { Nome: "China", Id: 6 },
         { Nome: "Russia", Id: 7 }
     ];
-
+	
 	 db.statuss = [
         { Name: "", Id: 0 },
         { Name: "Trancado", Id: 1 },
         { Name: "Regular", Id: 2 }
     ];
 
-    var xmlhttp = new XMLHttpRequest();
-    var url = "http://dandico.com.br/api/usuarios";
-
-    xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-             db.clients = JSON.parse(this.responseText);
-        }
-    };
-    xmlhttp.open("GET", url, true);
-    xmlhttp.send();
-    /*[
-
+    db.clients = [
+       
         {
 			"ID_Usuário":1,
             "Nome": "Carter Clarke",
@@ -71,7 +61,7 @@
 			"Status": 1,
             "Married": false
         }
-    ];*/
+    ];
 
     db.users = [
         {

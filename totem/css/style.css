@@ -11,3 +11,38 @@
   font-size: 2em;
   cursor: pointer;
 }
+
+/*  Bordas arredondadas*/
+.round
+{
+    border-radius: 30px;
+}
+
+.btn_round {
+  display:block;
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  border: 1px;
+
+}
+
+/*  Cor gradiente, bordas arredondadas*/
+.box {
+ background: linear-gradient(to right,#0D47A1, #1565c0,#0D47A1);
+ border-radius: 20px;
+}
+
+/*  Cor gradiente*/
+.grad
+{
+    background: linear-gradient(to right,#0D47A1, #036ED9,#0D47A1);
+}
+
+/*  Cor gradiente, bordas arredondadas*/
+.special-btn
+{
+    background: linear-gradient(to right,#0D47A1,#1565c0);
+    border-radius: 30px;
+
+}
